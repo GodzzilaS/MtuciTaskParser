@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="hamburger">☰</div>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    🚀 {{ admin }}
+  </div>
+
+  <div class="menu-item" onclick="window.location.href='{{ url_for('main.root') }}'">📊 Основная</div>
+  <div class="menu-item">⚙ Настройки</div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('main.logout') }}'">🚪 Выход</div>
+</nav>
+
+<main class="content">
+  <div class="card">
+    <h2>👥 Список пользователей</h2>
+    <div class="users-list">
+      {% for user in users_list %}
+      <div class="user-card">
+        <div class="user-name">
+          <a href="https://t.me/{{ user.telegram_username }}" target="_blank" class="telegram-link">
+            @{{ user.telegram_username or 'Без имени' }}
+          </a>
+        </div>
+        <div class="user-info">📧 Email: {{ user.mtuci_login or '—' }}</div>
+        <div class="user-info">🎓 Факультет: {{ user.faculty or '—' }}</div>
+        <div class="user-info">📘 Курс: {{ user.course or '—' }} | Группа: {{ user.group or '—' }}</div>
+        <div class="user-info">🏛 Уровень: {{ user.education_level or '—' }} | Форма: {{ user.study_form or '—' }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📈 Графики</h2>
+    <div style="height: 200px; background: rgba(255,255,255,0.05); border-radius: 0.5rem;"></div>
+  </div>
+</main>
+
+<script>
+  document.querySelector('.hamburger').addEventListener('click', () => {
+    document.querySelector('.sidebar').classList.toggle('active');
+  });
+
+  // Закрытие меню при клике вне области
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.sidebar') && !e.target.closest('.hamburger')) {
+      document.querySelector('.sidebar').classList.remove('active');
+    }
+  });
+</script>
+</body>
+</html>

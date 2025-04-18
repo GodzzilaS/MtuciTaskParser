@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход в систему</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=1">
+</head>
+<body>
+<div class="login-wrapper">
+  <form class="login-form" method="POST">
+    <h1>🔐 Вход</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="input-group">
+      <input type="text" name="username" placeholder="Логин" required>
+    </div>
+
+    <div class="input-group">
+      <input type="password" name="password" placeholder="Пароль" required>
+    </div>
+
+    <button type="submit" class="card"
+            style="width: 100%; background: var(--accent); color: black; border: none; cursor: pointer;">
+      Войти
+    </button>
+  </form>
+</div>
+</body>
+</html>

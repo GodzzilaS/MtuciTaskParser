@@ -24,102 +24,90 @@ class Task:
         self._last_updated = task.get("last_updated", 0)
 
     @property
-    def uuid(self):
-        return self._uuid
+    def uuid(self): return self._uuid
 
     @property
-    def user_id(self):
-        return self._user_id
+    def user_id(self): return self._user_id
+
+    @property
+    def task_link(self): return self._task_link
+
+    @property
+    def course(self): return self._course
+
+    @property
+    def task_name(self): return self._task_name
+
+    @property
+    def open_date(self): return self._open_date
+
+    @property
+    def due_date(self): return self._due_date
+
+    @property
+    def response_status(self): return self._response_status
+
+    @property
+    def grade_status(self): return self._grade_status
+
+    @property
+    def time_left(self): return self._time_left
+
+    @property
+    def last_change(self): return self._last_change
+
+    @property
+    def last_updated(self): return self._last_updated
 
     @user_id.setter
     def user_id(self, value):
         self._user_id = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"user_id": value}})
 
-    @property
-    def task_link(self):
-        return self._task_link
-
     @task_link.setter
     def task_link(self, value):
         self._task_link = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"task_link": value}})
-
-    @property
-    def course(self):
-        return self._course
 
     @course.setter
     def course(self, value):
         self._course = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"course": value}})
 
-    @property
-    def task_name(self):
-        return self._task_name
-
     @task_name.setter
     def task_name(self, value):
         self._task_name = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"task_name": value}})
-
-    @property
-    def open_date(self):
-        return self._open_date
 
     @open_date.setter
     def open_date(self, value):
         self._open_date = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"open_date": value}})
 
-    @property
-    def due_date(self):
-        return self._due_date
-
     @due_date.setter
     def due_date(self, value):
         self._due_date = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"due_date": value}})
-
-    @property
-    def response_status(self):
-        return self._response_status
 
     @response_status.setter
     def response_status(self, value):
         self._response_status = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"response_status": value}})
 
-    @property
-    def grade_status(self):
-        return self._grade_status
-
     @grade_status.setter
     def grade_status(self, value):
         self._grade_status = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"grade_status": value}})
-
-    @property
-    def time_left(self):
-        return self._time_left
 
     @time_left.setter
     def time_left(self, value):
         self._time_left = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"time_left": value}})
 
-    @property
-    def last_change(self):
-        return self._last_change
-
     @last_change.setter
     def last_change(self, value):
         self._last_change = value
         db.update_one(collection_name, {"_id": self._uuid}, {"$set": {"last_change": value}})
-
-    @property
-    def last_updated(self):
-        return self._last_updated
 
     @last_updated.setter
     def last_updated(self, value):

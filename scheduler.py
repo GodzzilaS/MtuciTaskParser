@@ -44,7 +44,7 @@ async def scheduled_check(
     await asyncio.gather(*tasks)
 
     elapsed = time.perf_counter() - start_ts
-    logger.info(f"=== ПРОВЕРКА ЗАВЕРШЕНА (за {elapsed:.2f} с) ===")
+    logger.info(f"=== ПРОВЕРКА ЗАВЕРШЕНА (за {elapsed:.2f} с) ===")
 
 
 async def _check_one_user(

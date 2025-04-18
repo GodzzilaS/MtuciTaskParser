@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from pymongo import UpdateOne
 
-from core import db, config
+from core import db, templates
 
 collection_name = "tasks"
 
@@ -138,7 +138,7 @@ def create_task(task_data):
       - time_left
       - last_change
     """
-    template = deepcopy(config.task_template)
+    template = deepcopy(templates.task_template)
     template["user_id"] = task_data.get("user_id")
     template["task_link"] = task_data.get("task_link")
     template["course"] = task_data.get("course", "")
@@ -175,7 +175,7 @@ def create_tasks_bulk(user_id: int, tasks_data: list):
     bulk_ops = []
     current_ts = time.time()
     for task in tasks_data:
-        template = deepcopy(config.task_template)
+        template = deepcopy(templates.task_template)
         template.update(task)
         template["user_id"] = user_id
         template.setdefault("last_updated", current_ts)

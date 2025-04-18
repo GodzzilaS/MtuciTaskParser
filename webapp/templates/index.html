@@ -1,8 +1,106 @@
 {% extends 'base.html' %}
 {% block title %}Админ-панель{% endblock %}
 {% block content %}
+<div class="card status-banner">
+  <h2>🛰️ Состояние системы</h2>
+  <div class="status-grid">
+    <div class="status-item">
+      <span class="status-label">Бот</span>
+      <span class="status-value {{ 'on' if bot_enabled else 'off' }}">
+        {{ 'Включён' if bot_enabled else 'Выключен' }}
+      </span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Тех. работы</span>
+      <span class="status-value {{ 'on' if maintenance_mode else 'off' }}">
+        {{ 'Включены' if maintenance_mode else 'Выключены' }}
+      </span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">Проверки</span>
+      <span class="status-value {{ 'on' if scheduled_enabled else 'off' }}">
+        {{ 'Включены' if scheduled_enabled else 'Отключены' }}
+      </span>
+    </div>
+  </div>
+</div>
+
 <div class="card">
-  <h2>📈 Графики</h2>
-  <div style="height: 200px; background: rgba(255,255,255,0.05); border-radius: 0.5rem;"></div>
+  <h2>⚙ Управление</h2>
+  <div class="button-panel">
+    <a href="{{ url_for('main.toggle_bot') }}" class="menu-item">
+      {{ 'Выключить бота' if bot_enabled else 'Включить бота' }}
+    </a>
+    <a href="{{ url_for('main.toggle_maintenance') }}" class="menu-item">
+      {{ 'Выключить тех.работы' if maintenance_mode else 'Включить тех.работы' }}
+    </a>
+    <a href="{{ url_for('main.toggle_scheduled') }}" class="menu-item">
+      {{ 'Отключить проверки' if scheduled_enabled else 'Включить проверки' }}
+    </a>
+  </div>
+</div>
+
+<div class="card stats-card">
+  <h2>📊 Общая статистика</h2>
+  <div class="stats-grid">
+    <div class="stat">
+      <span class="stat-label">Всего проверок</span>
+      <span class="stat-value">{{ total_schedule }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">Последняя проверка</span>
+      <span class="stat-value">{{ last_schedule or '—' }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">Запусков драйвера</span>
+      <span class="stat-value">{{ driver_inits }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">Авторизаций</span>
+      <span class="stat-value">{{ authorizations }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">Успешных авторизаций</span>
+      <span class="stat-value">{{ success_authorizations }}</span>
+    </div>
+
+    <div class="stat">
+      <span class="stat-label">Новых пользователей</span>
+      <span class="stat-value">{{ new_users }}</span>
+    </div>
+
+    <div class="stat stat-full">
+      <span class="stat-label">📈 Использование</span>
+      <div class="command-table">
+        <div class="command-row command-head">
+          <div>Команда</div>
+          <div>Кол-во</div>
+          <div>Последнее</div>
+          <div>Мин/Ср/Макс/Посл (с)</div>
+        </div>
+        {% for cmd, data in commands_data.items() %}
+        <div class="command-row">
+          <div><code>{{ cmd }}</code></div>
+          <div>{{ data.count }}</div>
+          <div class="dim">{{ data.last or '—' }}</div>
+          <div>
+            {% if command_stats.get(cmd) %}
+            {{ command_stats[cmd].min }} /
+            {{ command_stats[cmd].avg }} /
+            {{ command_stats[cmd].max }} /
+            {{ command_stats[cmd].last_duration }}
+            {% else %}
+            — / — / — / -
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

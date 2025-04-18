@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 
-from core import db, config
+from core import db, templates
 
 collection_name = "users"
 
@@ -122,7 +122,7 @@ def create_user(telegram_id, telegram_username, mtuci_login, mtuci_password):
     mtuci_login = str(mtuci_login)
     mtuci_password = str(mtuci_password)
 
-    template = deepcopy(config.user_template)
+    template = deepcopy(templates.user_template)
     template["telegram_id"] = telegram_id
     template["telegram_username"] = telegram_username
     template["mtuci_login"] = mtuci_login
@@ -130,6 +130,7 @@ def create_user(telegram_id, telegram_username, mtuci_login, mtuci_password):
     template["created"] = time.time()
 
     db.insert(collection_name, template)
+    db.insert("data", {"type": "new_user", "timestamp": time.time()})
     return select_user(telegram_id)
 
 

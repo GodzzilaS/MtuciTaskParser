@@ -1,14 +1,17 @@
 import asyncio
 import logging
+import time
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
-from telegram.ext import CommandHandler, CallbackQueryHandler, ConversationHandler, ContextTypes
+from telegram.ext import CommandHandler, ConversationHandler, ContextTypes
 
+from core.db import insert
 from core.models.tasks import create_tasks_bulk
 from core.models.users import create_user, select_user, exist
 from core.settings import Settings
 from services.encryption import EncryptionService
 from services.scraper import Scraper
+from utils.check_utils import available_or_message, measure_duration
 from utils.date_utils import short_date, compact_time
 from utils.status_utils import status_emoji
 
@@ -157,8 +160,11 @@ def register_handlers(app, keyboard: ReplyKeyboardMarkup):
     # app.add_handler(conv)
 
 
+@available_or_message
+@measure_duration("start")
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
+    insert("data", {"type": "command", "command": "start", "timestamp": time.time()})
     await update.message.reply_html(
         f"Привет, {user.mention_html()}!\n"
         "Чтобы подключить LMS, отправь:\n"
@@ -171,6 +177,8 @@ def login(encryptor: EncryptionService):
     /login логика: шифруем пароль, сохраняем или обновляем пользователя.
     """
 
+    @available_or_message
+    @measure_duration("login")
     async def _login(update: Update, context: ContextTypes.DEFAULT_TYPE):
         args = context.args
         if len(args) != 2:
@@ -200,6 +208,8 @@ def get_tasks(settings: Settings, encryptor: EncryptionService, scraper: Scraper
     сохранение через create_tasks_bulk и отправка сообщений в чат.
     """
 
+    @available_or_message
+    @measure_duration("get_tasks")
     async def _get_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
         tg_id = update.effective_user.id
         user = select_user(tg_id)
@@ -207,6 +217,7 @@ def get_tasks(settings: Settings, encryptor: EncryptionService, scraper: Scraper
             await update.message.reply_text("❌ Сначала авторизуйся через /login")
             return
 
+        insert("data", {"type": "command", "command": "get_tasks", "timestamp": time.time()})
         pwd = encryptor.decrypt(user.mtuci_password)
 
         status_msg = await update.message.reply_text("🔄 Получаю задания, это займёт время...")
@@ -289,6 +300,12 @@ def get_tasks(settings: Settings, encryptor: EncryptionService, scraper: Scraper
 
 
 def get_timetable(encryptor, scraper):
+    """
+    /get_timetable логика: Парсим расписание с сайта личного кабинета.
+    """
+
+    @available_or_message
+    @measure_duration("get_timetable")
     async def _get_timetable(update: Update, context: ContextTypes.DEFAULT_TYPE):
         tg_id = update.effective_user.id
         user = select_user(tg_id)
@@ -297,6 +314,7 @@ def get_timetable(encryptor, scraper):
             await update.message.reply_text("❌ Сначала авторизуйся через /login")
             return
 
+        insert("data", {"type": "command", "command": "get_timetable", "timestamp": time.time()})
         status_msg = await update.message.reply_text(
             "🔄 Получаю календарь на месяц, это может занять время…"
         )

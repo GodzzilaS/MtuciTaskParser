@@ -6,28 +6,38 @@
   <title>Вход в систему</title>
   <link rel="stylesheet" href="/static/css/style.css?v=1">
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-  <link rel="icon" type="image/png" sizes="16x16"    href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
-  <link rel="icon" type="image/png" sizes="32x32"    href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
   <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='favicon/android-chrome-192x192.png') }}">
   <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='favicon/android-chrome-512x512.png') }}">
-  <link rel="apple-touch-icon" sizes="180x180"      href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
   <meta name="theme-color" content="#171923">
-
 </head>
 <body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container">
+  {% for category, message in messages %}
+  <div class="flash flash-{{ category }}">
+    {% if category == 'info' %}
+    <img src="{{ url_for('static', filename='icons/info.svg') }}" alt="ℹ️" class="flash-icon">
+    {% elif category == 'warn' %}
+    <img src="{{ url_for('static', filename='icons/error.svg') }}" alt="⚠️" class="flash-icon">
+    {% elif category == 'error' %}
+    <img src="{{ url_for('static', filename='icons/error.svg') }}" alt="❌" class="flash-icon">
+    {% else %}
+    <img src="{{ url_for('static', filename='icons/info.svg') }}" alt="🚀" class="flash-icon">
+    {% endif %}
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
 <div class="login-wrapper">
   <form class="login-form" method="POST">
     <h1>🔐 Вход</h1>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-{{ category }}">{{ message }}</div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-
     <div class="input-group">
       <input type="text" name="username" placeholder="Логин" required>
     </div>
@@ -42,5 +52,16 @@
     </button>
   </form>
 </div>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.flash').forEach(el => {
+        el.style.transition = 'opacity 0.5s ease';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 500);
+      });
+    }, 3000);
+  });
+</script>
 </body>
 </html>

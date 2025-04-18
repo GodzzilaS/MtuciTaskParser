@@ -15,6 +15,8 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from core.db import insert
+
 logger = logging.getLogger(__name__)
 
 SUBJECTS_MAP = {
@@ -44,8 +46,9 @@ class Scraper:
         self.settings = settings
 
     def init_driver(self, load_css=False) -> webdriver.Chrome:
+        insert("data", {"type": "driver_init", "timestamp": time.time()})
         options = Options()
-        options.add_argument("--headless=new")
+        options.add_argument("--headless")
         options.add_argument("--incognito")
         options.add_argument("--window-size=1920,1080")
         flags = [
@@ -76,6 +79,7 @@ class Scraper:
         return driver
 
     def login(self, driver, username: str, password: str):
+        insert("data", {"type": "authorization", "timestamp": time.time()})
         wait = WebDriverWait(driver, 20)
         driver.get(self.settings.LOGIN_PAGE)
         wait.until(EC.presence_of_element_located((By.NAME, "username")))
@@ -84,6 +88,7 @@ class Scraper:
         driver.find_element(By.NAME, "password").send_keys(password + Keys.RETURN)
         wait.until(EC.presence_of_element_located((By.ID, "page-content")))
         logger.info(f"[{username}] Успешно вошли в систему")
+        insert("data", {"type": "success_authorization", "timestamp": time.time()})
 
     @staticmethod
     def _dom_click(driver: WebDriver, element):

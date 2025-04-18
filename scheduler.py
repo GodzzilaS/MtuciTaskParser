@@ -9,6 +9,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from telegram.ext import Application
 
+from core.db import insert
+from core.models.config import get_scheduled_enabled
 from core.models.tasks import custom_select as task_select
 from core.models.users import custom_select as user_select
 from core.settings import Settings
@@ -28,24 +30,41 @@ async def scheduled_check(
     Основная точка входа — перебирает всех подписанных пользователей,
     запускает их проверку в параллельных потоках, ограниченных семафором
     """
-    start_ts = time.perf_counter()
-    logger.info("=== НАЧАЛО ПРОВЕРКИ ЗАДАНИЙ ===")
+    if get_scheduled_enabled():
+        start_wall = time.time()
+        tasks_list = list(task_select({}))
+        total_tasks = len(tasks_list)
+        users_with_tasks = {t.user_id for t in tasks_list}
+        total_users_with_tasks = len(users_with_tasks)
 
-    users = list(user_select({"notifications": True}))
-    logger.info(f"Пользователей для проверки: {len(users)}")
+        start_ts = time.perf_counter()
+        logger.info("=== НАЧАЛО ПРОВЕРКИ ЗАДАНИЙ ===")
 
-    sem = asyncio.Semaphore(settings.MAX_CONCURRENT_BROWSERS)
-    tasks = [
-        asyncio.create_task(
-            _check_one_user(u, app, settings, scraper, encryptor, sem)
-        )
-        for u in users
-    ]
-    await asyncio.gather(*tasks)
+        users = list(user_select({"notifications": True}))
+        logger.info(f"Пользователей для проверки: {len(users)}")
 
-    elapsed = time.perf_counter() - start_ts
-    logger.info(f"=== ПРОВЕРКА ЗАВЕРШЕНА (за {elapsed:.2f} с) ===")
+        sem = asyncio.Semaphore(settings.MAX_CONCURRENT_BROWSERS)
+        tasks = [
+            asyncio.create_task(
+                _check_one_user(u, app, settings, scraper, encryptor, sem)
+            )
+            for u in users
+        ]
+        await asyncio.gather(*tasks)
 
+        elapsed = time.perf_counter() - start_ts
+        end_wall = time.time()
+        logger.info(f"=== ПРОВЕРКА ЗАВЕРШЕНА (за {elapsed:.2f} с) ===")
+
+        insert("data", {
+            "type": "scheduled_check",
+            "start_ts": start_wall,
+            "end_ts": end_wall,
+            "duration": elapsed,
+            "total_tasks": total_tasks,
+            "users_with_tasks": total_users_with_tasks,
+            "checked_users": len(users)
+        })
 
 async def _check_one_user(
         user,

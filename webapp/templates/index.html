@@ -59,12 +59,12 @@
     </div>
 
     <div class="stat">
-      <span class="stat-label">Авторизаций</span>
+      <span class="stat-label">Авторизаций на LMS</span>
       <span class="stat-value">{{ authorizations }}</span>
     </div>
 
     <div class="stat">
-      <span class="stat-label">Успешных авторизаций</span>
+      <span class="stat-label">Успешных авторизаций на LMS</span>
       <span class="stat-value">{{ success_authorizations }}</span>
     </div>
 
@@ -80,21 +80,29 @@
           <div>Команда</div>
           <div>Кол-во</div>
           <div>Последнее</div>
-          <div>Мин/Ср/Макс/Посл (с)</div>
+          <div class="aligned-times">
+            <div>Мин</div>
+            <div>Ср</div>
+            <div>Макс</div>
+            <div>Посл</div>
+          </div>
         </div>
         {% for cmd, data in commands_data.items() %}
         <div class="command-row">
           <div><code>{{ cmd }}</code></div>
           <div>{{ data.count }}</div>
           <div class="dim">{{ data.last or '—' }}</div>
-          <div>
+          <div class="aligned-times">
             {% if command_stats.get(cmd) %}
-            {{ command_stats[cmd].min }} /
-            {{ command_stats[cmd].avg }} /
-            {{ command_stats[cmd].max }} /
-            {{ command_stats[cmd].last_duration }}
+            <div>{{ command_stats[cmd].min }}</div>
+            <div>{{ command_stats[cmd].avg }}</div>
+            <div>{{ command_stats[cmd].max }}</div>
+            <div>{{ command_stats[cmd].last_duration }}</div>
             {% else %}
-            — / — / — / -
+            <div>—</div>
+            <div>—</div>
+            <div>—</div>
+            <div>—</div>
             {% endif %}
           </div>
         </div>

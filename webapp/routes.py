@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 from collections import defaultdict
@@ -172,6 +173,88 @@ def users_list_route():
     if not session.get("admin_logged_in"):
         return redirect(url_for("main.login"))
 
+    data_coll = get_collection("data")
+    authorizations_on_site = data_coll.count_documents({"type": "authorization_on_site"})
+    login_time = session.get("login_time")
+    session_time = None
+    if login_time:
+        seconds = int(time.time() - login_time)
+        h, m, s = seconds // 3600, (seconds % 3600) // 60, seconds % 60
+        session_time = f"{h}:{m:02}:{s:02}" if h > 0 else f"{m}:{s:02}"
+
     users_list = users.custom_select({})
-    logger.info(users_list)
-    return render_template("users.html", admin=session.get("admin_username"), users_list=users_list)
+    return render_template(
+        "users.html",
+        admin=session.get("admin_username"),
+        session_time=session_time,
+        authorizations_on_site=authorizations_on_site,
+        users_list=users_list,
+        courses_map=json.dumps(current_app.config["SETTINGS"].COURSES_MAP, ensure_ascii=False)
+    )
+
+
+@blueprint.route("/update_user", methods=["POST"])
+def update_user():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("main.login"))
+
+    try:
+        telegram_id = request.form.get('telegram_id')
+        if not telegram_id:
+            flash("Не указан идентификатор пользователя", "error")
+            return redirect(url_for("main.users_list_route"))
+
+        user = users.select_user(int(telegram_id))
+        if not user:
+            flash("Пользователь не найден", "error")
+            return redirect(url_for("main.users_list_route"))
+
+        has_changes = False
+
+        new_telegram = request.form.get('telegram_username')
+        if user.telegram_username != new_telegram:
+            user.telegram_username = new_telegram
+            has_changes = True
+
+        new_mtuci_login = request.form.get('mtuci_login') or None
+        if user.mtuci_login != new_mtuci_login:
+            user.mtuci_login = new_mtuci_login
+            has_changes = True
+
+        new_faculty = request.form.get('faculty') or None
+        if user.faculty != new_faculty:
+            user.faculty = new_faculty
+            has_changes = True
+
+        new_course = request.form.get('course') or None
+        if user.course != new_course:
+            user.course = new_course
+            has_changes = True
+
+        new_group = request.form.get('group') or None
+        if user.group != new_group:
+            user.group = new_group
+            has_changes = True
+
+        new_education_level = request.form.get('education_level') or None
+        if user.education_level != new_education_level:
+            user.education_level = new_education_level
+            has_changes = True
+
+        new_form = request.form.get('study_form') or None
+        if user.study_form != new_form:
+            user.study_form = new_form
+            has_changes = True
+
+        if has_changes:
+            flash(f"Данные пользователя {user.telegram_username} успешно обновлены", "info")
+        else:
+            flash("Нет изменений для сохранения", "info")
+
+    except ValueError as e:
+        flash(f"Ошибка формата данных: {str(e)}", "error")
+    except Exception as e:
+        logger.error(f"Ошибка при обновлении пользователя: {str(e)}")
+        flash("Произошла ошибка при обновлении", "error")
+
+    return redirect(url_for("main.users_list_route"))

@@ -1,7 +1,7 @@
 import logging
 import time
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, redirect, url_for, request, session, flash, current_app
 
@@ -59,7 +59,7 @@ def root():
         .limit(1)
     last_schedule = None
     for d in last:
-        last_schedule = datetime.fromtimestamp(d["end_ts"]).strftime("%Y-%m-%d %H:%M:%S")
+        last_schedule = (datetime.fromtimestamp(d["end_ts"]) + timedelta(hours=1)).strftime("%d.%m.%Y %H:%M:%S")
 
     # статистика инициализаций драйвера
     driver_inits = data_coll.count_documents({"type": "driver_init"})

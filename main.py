@@ -1,13 +1,12 @@
 import asyncio
 import logging
-import sys
-from datetime import timedelta
-
-import colorlog
 import os
 import platform
+import sys
+from datetime import timedelta
 from threading import Thread
 
+import colorlog
 from flask import Flask, redirect
 from telegram import ReplyKeyboardMarkup, BotCommand
 from telegram.ext import ApplicationBuilder, Application
@@ -16,7 +15,7 @@ from core.settings import Settings
 from bot.handlers import register_handlers
 from scheduler import background_check
 from utils import blueprints_utils
-from utils.logger_utils import SafeColorHandler
+from utils.logger_utils import SafeColorHandler, CustomLogMiddleware
 
 LOG_FORMAT = "[{asctime}] {log_color}{name:^24} | {levelname:^8} | {message}"
 DATE_FORMAT = "%d.%m.%Y %H:%M:%S"
@@ -56,6 +55,7 @@ def create_flask_app(settings: Settings) -> Flask:
         template_folder=os.path.join(base, "webapp", "templates"),
         static_folder=os.path.join(base, "webapp", "static")
     )
+    app.wsgi_app = CustomLogMiddleware(app.wsgi_app)
     app.config["SETTINGS"]: Settings = settings
     app.config["SESSION_PERMANENT"] = True
     app.secret_key = settings.ENCRYPTION_KEY
@@ -70,6 +70,7 @@ def create_flask_app(settings: Settings) -> Flask:
 
 
 def run_webadmin(settings: Settings):
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
     app = create_flask_app(settings)
     app.run(host='0.0.0.0', port=5000, debug=False)
 
@@ -77,7 +78,7 @@ def run_webadmin(settings: Settings):
 def main():
     settings = Settings()
 
-    # 1. Запускаем фласк с админкой
+    # 1. Запускаем нашу веб-админку
     Thread(target=run_webadmin, args=(settings,), daemon=True).start()
 
     # 2. Настраиваем и запускаем Telegram‑бота

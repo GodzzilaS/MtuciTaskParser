@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Список пользователей{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>👥 Список пользователей</h2>
+  <div class="users-list">
+    {% for user in users_list %}
+    <div class="user-card">
+      <div class="user-name">
+        <a href="https://t.me/{{ user.telegram_username }}" target="_blank" class="telegram-link">
+          @{{ user.telegram_username or 'Без имени' }}
+        </a>
+      </div>
+      <div class="user-info">📧 Email: {{ user.mtuci_login or '—' }}</div>
+      <div class="user-info">🎓 Факультет: {{ user.faculty or '—' }}</div>
+      <div class="user-info">📘 Курс: {{ user.course or '—' }} | Группа: {{ user.group or '—' }}</div>
+      <div class="user-info">🏛 Уровень: {{ user.education_level or '—' }} | Форма: {{ user.study_form or '—' }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

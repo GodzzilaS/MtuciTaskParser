@@ -33,6 +33,14 @@ def root():
     if not session.get("admin_logged_in"):
         return redirect(url_for("main.login"))
 
+    return render_template("index.html", admin=session.get("admin_username"))
+
+
+@blueprint.route("/users")
+def users_list_route():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("main.login"))
+
     users_list = users.custom_select({})
     logger.info(users_list)
     return render_template("index.html", admin=session.get("admin_username"), users_list=users_list)

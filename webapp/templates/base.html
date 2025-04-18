@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %}</title>
+  {% block head %}
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='favicon/android-chrome-192x192.png') }}">
+  <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='favicon/android-chrome-512x512.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
+  <meta name="theme-color" content="#171923">
+  {% endblock %}
+</head>
+<body>
+{% block navbar %}
+<div class="hamburger">☰</div>
+<nav class="sidebar">
+  <div class="sidebar-header">
+    🚀 {{ admin }}
+  </div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('main.root') }}'">📊 Основная</div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('main.users_list_route') }}'">👤 Пользователи</div>
+  <div class="menu-item">⚙ Настройки</div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('main.logout') }}'">🚪 Выход</div>
+</nav>
+{% endblock %}
+<main class="content">
+  {% block content %}{% endblock %}
+</main>
+{% block scripts %}
+<script>
+  document.querySelector('.hamburger').addEventListener('click', () => {
+    document.querySelector('.sidebar').classList.toggle('active');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.sidebar') && !e.target.closest('.hamburger')) {
+      document.querySelector('.sidebar').classList.remove('active');
+    }
+  });
+</script>
+{% endblock %}
+</body>
+</html>

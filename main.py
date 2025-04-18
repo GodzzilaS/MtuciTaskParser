@@ -1,5 +1,9 @@
 import asyncio
 import logging
+import sys
+
+import colorlog
+import os
 import platform
 
 from telegram import ReplyKeyboardMarkup, BotCommand
@@ -8,11 +12,37 @@ from telegram.ext import ApplicationBuilder, Application
 from core.settings import Settings
 from bot.handlers import register_handlers
 from scheduler import background_check
+from utils import blueprints_utils
+from utils.logger_utils import SafeColorHandler
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
+LOG_FORMAT = "[{asctime}] {log_color}{name:^24} | {levelname:^8} | {message}"
+DATE_FORMAT = "%d.%m.%Y %H:%M:%S"
+LOG_COLORS = {
+    "DEBUG":    "cyan",
+    "INFO":     "green",
+    "WARNING":  "yellow",
+    "ERROR":    "red",
+    "CRITICAL": "bold_red",
+}
+
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+
+formatter = colorlog.ColoredFormatter(
+    fmt=LOG_FORMAT,
+    datefmt=DATE_FORMAT,
+    log_colors=LOG_COLORS,
+    reset=False,
+    style='{'
 )
+
+handler = SafeColorHandler(stream=sys.stdout)
+handler.setFormatter(formatter)
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+root_logger.addHandler(handler)
+
 logger = logging.getLogger(__name__)
 
 

@@ -15,13 +15,23 @@ MtuciTaskParser/
 │   ├── settings.py             # Загрузка .env и константы приложения
 │   ├── db.py                   # Инициализация подключения и работа с MongoDB
 │   └── models/                 # Модели и методы работы с БД
+│       ├── config.py           # Флаги конфигурации (maintenance_mode, scheduled_enabled)
+│       ├── users.py            # CRUD для пользователей
+│       └── tasks.py            # CRUD и bulk‑операции для задач
 ├── services/
 │   ├── encryption.py           # Сервис шифрования паролей
 │   └── scraper.py              # Selenium‑парсер LMS
 ├── utils/
-│   ├── date_utils.py           # Функции разбора и форматирования дат
-│   └── status_utils.py         # Выбор эмоджи по статусу
-└── bot/
+│   ├── blueprints_utils.py     # Динамическая загрузка Flask‑blueprint’ов
+│   ├── check_utils.py          # Декораторы проверки доступности бота/тех.работ
+│   ├── date_utils.py           # Преобразование дат/времени в удобный формат
+│   ├── logger_utils.py         # Логгер с цветами + middleware для Flask
+│   └── status_utils.py         # Преобразование статусов задания в эмодзи
+├── webapp/                     # Веб‑интерфейс на Flask для админки
+│   ├── routes.py               # Blueprint‑роуты (управление пользователями, флагами)
+│   ├── templates/              # Jinja2‑шаблоны (base, index, login, users)
+│   └── static/                 # CSS, favicon’ы, SVG‑иконки
+└── bot/                        # Обработчики Telegram‑бота
     └── handlers.py             # Обработчики команд Telegram
 ```
 

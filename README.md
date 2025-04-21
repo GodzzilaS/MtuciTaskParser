@@ -1,6 +1,6 @@
 # MtuciTaskParser
 
-Асинхронный Telegram‑бот для мониторинга и уведомления об изменениях статуса заданий в LMS МТУСИ.
+Асинхронный Telegram‑бот c веб-админкой для мониторинга и уведомления об изменениях статуса заданий в LMS МТУСИ.
 
 ## Структура проекта
 
@@ -32,7 +32,11 @@ MtuciTaskParser/
 │   ├── templates/              # Jinja2‑шаблоны (base, index, login, users)
 │   └── static/                 # CSS, favicon’ы, SVG‑иконки
 └── bot/                        # Обработчики Telegram‑бота
-    └── handlers.py             # Обработчики команд Telegram
+    ├── __init__.py             # Регистрация всех команд
+    ├── start_handler.py        # Обработка /start
+    ├── login_handler.py        # Обработка /login
+    ├── tasks_handler.py        # Обработка /get_tasks
+    └── timetable_handler.py    # Обработка /get_timetable
 ```
 
 ## Возможности
@@ -81,9 +85,3 @@ DB_NAME="<название базы данных>"
     ```bash
     python main.py
     ```
-
-При старте бот автоматически:
-1. Инициализирует подключение к Telegram.
-2. Устанавливает команды в меню: `/login`, `/get_tasks`.
-3. Запускает фоновую задачу, которая каждые 5 минут вызывает проверку статусов заданий.
-4. Ожидает входящих Telegram‑команд.

@@ -12,7 +12,7 @@ from telegram import ReplyKeyboardMarkup, BotCommand
 from telegram.ext import ApplicationBuilder, Application
 
 from core.settings import Settings
-from bot.handlers import register_handlers
+from bot import register_handlers
 from scheduler import background_check
 from utils import blueprints_utils
 from utils.logger_utils import SafeColorHandler, CustomLogMiddleware
@@ -90,7 +90,6 @@ def main():
     async def post_init(application: Application):
         await application.bot.set_my_commands([
             BotCommand("login", "Авторизация /login ваш_логин ваш_пароль"),
-            # BotCommand("configure", "Настройка аккаунта для получения расписания"),
             BotCommand("get_tasks", "Получить список заданий из LMS"),
             BotCommand("get_timetable", "Получить расписание из LMS")
         ])

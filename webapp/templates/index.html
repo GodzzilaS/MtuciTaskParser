@@ -17,7 +17,10 @@
       </span>
     </div>
     <div class="status-item">
-      <span class="status-label">Проверки</span>
+      <span class="status-label">Проверки</span><br>
+      <span class="status-label">
+        Текущий интервал: <strong>{{ interval }} мин</strong>
+      </span>
       <span class="status-value {{ 'on' if scheduled_enabled else 'off' }}">
         {{ 'Включены' if scheduled_enabled else 'Отключены' }}
       </span>
@@ -37,6 +40,7 @@
     <a href="{{ url_for('main.toggle_scheduled') }}" class="menu-item">
       {{ 'Отключить проверки' if scheduled_enabled else 'Включить проверки' }}
     </a>
+    <a href="{{ url_for('main.run_check_route') }}" class="menu-item">Запустить проверку</a>
   </div>
 </div>
 

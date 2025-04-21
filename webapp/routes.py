@@ -1,16 +1,22 @@
+import asyncio
 import json
 import logging
+import os
 import time
 from collections import defaultdict
 from datetime import datetime
+from threading import Thread
 from zoneinfo import ZoneInfo
 
-from flask import Blueprint, render_template, redirect, url_for, request, session, flash, current_app
+from flask import Blueprint, render_template, redirect, url_for, request, session, flash, current_app, send_file
 
 from core.db import get_collection, insert
 from core.models import users
 from core.models.config import get_bot_enabled, set_bot_enabled, set_maintenance_mode, get_maintenance_mode, \
-    get_scheduled_enabled, set_scheduled_enabled
+    get_scheduled_enabled, set_scheduled_enabled, get_schedule_interval, set_schedule_interval
+from scheduler import scheduled_check
+from services.encryption import EncryptionService
+from services.scraper import Scraper
 
 blueprint = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
@@ -134,7 +140,8 @@ def root():
         command_stats=command_stats,
         bot_enabled=get_bot_enabled(),
         maintenance_mode=get_maintenance_mode(),
-        scheduled_enabled=get_scheduled_enabled()
+        scheduled_enabled=get_scheduled_enabled(),
+        interval=get_schedule_interval()
     )
 
 
@@ -290,3 +297,47 @@ def delete_user():
         flash("Произошла ошибка при обновлении", "error")
 
     return redirect(url_for("main.users_list_route"))
+
+
+@blueprint.route('/run-check', methods=['POST'])
+def run_check_route():
+    """
+    Запустить одну итерацию фоновой проверки в отдельном потоке.
+    """
+    settings = current_app.config['SETTINGS']
+
+    def worker():
+        scraper = Scraper(settings)
+        encryptor = EncryptionService(settings.ENCRYPTION_KEY)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(scheduled_check(None,
+                                                    settings,
+                                                    scraper,
+                                                    encryptor))
+        finally:
+            loop.close()
+
+    Thread(target=worker, daemon=True).start()
+    flash("✅ Ручная проверка задач запущена", "info")
+    return redirect("/")
+
+
+@blueprint.route('/settings', methods=['GET', 'POST'])
+def schedule_settings_route():
+    """
+    Интерфейс для изменения интервала фоновой проверки.
+    """
+    if request.method == 'POST':
+        try:
+            interval = int(request.form.get('interval', 5))
+            set_schedule_interval(interval)
+            flash(f"✅ Интервал проверки изменён: {interval} мин.", "info")
+        except ValueError:
+            flash("❌ Неверный формат интервала", "danger")
+        return redirect(url_for('main.schedule_settings_route'))
+
+    # GET
+    interval = get_schedule_interval()
+    return render_template('settings.html', interval=interval)

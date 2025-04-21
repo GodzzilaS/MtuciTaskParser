@@ -50,3 +50,11 @@ def get_scheduled_enabled() -> bool:
 
 def set_scheduled_enabled(enabled: bool) -> None:
     set_flag("scheduled_enabled", enabled)
+
+
+def get_schedule_interval(default: int = 5) -> int:
+    return int(get_flag("schedule_interval", default))
+
+
+def set_schedule_interval(interval: int) -> None:
+    set_flag("schedule_interval", interval)

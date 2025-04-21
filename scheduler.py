@@ -10,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from telegram.ext import Application
 
 from core.db import insert
-from core.models.config import get_scheduled_enabled
+from core.models.config import get_scheduled_enabled, get_schedule_interval
 from core.models.tasks import custom_select as task_select
 from core.models.users import custom_select as user_select
 from core.settings import Settings
@@ -93,12 +93,13 @@ async def _check_one_user(
                 f"┠─ <b>Оценка:</b> {c['old_grade']} → {c['new_grade']}\n"
                 f"┖─ <b>Ссылка:</b> <a href=\"{c['link']}\">Перейти к заданию</a>"
             )
-            await app.bot.send_message(
-                chat_id=user.telegram_id,
-                text=text,
-                parse_mode="HTML",
-                disable_web_page_preview=True
-            )
+            if app is not None:
+                await app.bot.send_message(
+                    chat_id=user.telegram_id,
+                    text=text,
+                    parse_mode="HTML",
+                    disable_web_page_preview=True
+                )
 
 
 def _check_user_sync(user, settings, scraper: Scraper, encryptor: EncryptionService):
@@ -181,4 +182,4 @@ async def background_check(app):
 
     while True:
         await scheduled_check(app, settings, scraper, encryptor)
-        await asyncio.sleep(300)  # 5 минут
+        await asyncio.sleep(get_schedule_interval() * 60)

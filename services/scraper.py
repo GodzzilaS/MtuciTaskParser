@@ -1,7 +1,8 @@
+import json
 import logging
 import subprocess
 import time
-from datetime import date
+from datetime import datetime
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
@@ -29,23 +30,14 @@ SUBJECTS_MAP = {
     "ОП": "Основы права",
     "СИАОД": "Структуры и алгоритмы обработки данных"
 }
-MONTHS_RU = {
-    "январь": 1, "февраль": 2, "март": 3, "апрель": 4,
-    "май": 5, "июнь": 6, "июль": 7, "август": 8,
-    "сентябрь": 9, "октябрь": 10, "ноябрь": 11, "декабрь": 12
-}
-TYPES_MAP = {
-    "bg-green": "Лекция",
-    "bg-blue": "Практическое занятие | Зачёт",
-    "bg-red": "Лабораторное занятие | Защита курсового проекта | Консультация | Экзамен | ГАК | Защита ВКР"
-}
 
 
 class Scraper:
     def __init__(self, settings):
         self.settings = settings
 
-    def init_driver(self, load_css=False) -> webdriver.Chrome:
+    @staticmethod
+    def init_driver(load_css=False) -> webdriver.Chrome:
         insert("data", {"type": "driver_init", "timestamp": time.time()})
         options = Options()
         options.add_argument("--headless")
@@ -67,6 +59,7 @@ class Scraper:
             "profile.managed_default_content_settings.stylesheets": 2,
         }
         options.add_experimental_option("prefs", prefs)
+        options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
         driver = webdriver.Chrome(options=options)
 
@@ -246,115 +239,76 @@ class Scraper:
 
     def get_timetable(self, driver, login, pwd):
         """
-        Возвращает список словарей вида  {"date": "DD.MM.YYYY", "subjects": [<abbr>, …]}
+        Возвращает «сырое» JSON‑тело ответа от /ilk/x/getProcessor без сохранения.
         """
         self.login(driver, login, pwd)
         driver.get(self.settings.TIME_TABLE_URL)
-        wait = WebDriverWait(driver, 15)
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "div.schedule-lessons"))
+        )
 
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.schedule-lessons")))
+        data = None
+        for entry in driver.get_log("performance"):
+            msg = json.loads(entry["message"])["message"]
+            if msg.get("method") == "Network.responseReceived":
+                url = msg["params"]["response"]["url"]
+                if "getProcessor" in url:
+                    req_id = msg["params"]["requestId"]
+                    body = driver.execute_cdp_cmd(
+                        "Network.getResponseBody",
+                        {"requestId": req_id}
+                    )
+                    data = json.loads(body["body"])
+                    break
 
-        html = driver.page_source
-        return self.parse_month_view(html)
+        if data is None:
+            raise RuntimeError("Не удалось поймать ответ getProcessor")
 
-    def parse_month_view(self, html: str) -> list[dict]:
+        return self.parse_api_timetable(data)
+
+    @staticmethod
+    def parse_api_timetable(api_json: dict) -> list[dict]:
         """
-        Разбирает сетку <div class="schedule‑lessons"> (режим «Месяц» в ЛК МТУСИ)
-        и возвращает список словарей:
-            - date: строка "DD.MM.YYYY"
-            - subjects: [аббревиатуры …]  (возможен пустой список)
+        Из структуры api_json['data']['Ответ']['МассивРасписания']
+        выдаёт список записей вида:
+          {"date": "DD.MM.YYYY", "type": "...", "lesson": "...", "teacher": "...", ...}
         """
-        from datetime import date
+        days = api_json["data"]["Ответ"]["МассивРасписания"]
+        out = []
 
-        soup = BeautifulSoup(html, "html.parser")
-        grid = soup.select_one("div.schedule-lessons")
-        month_caption = soup.select_one("strong.schedule-month")
-        if not grid or not month_caption:
-            return []
+        for day in days:
+            datestr = datetime.strptime(day["Дата"], "%Y%m%d%H%M%S").strftime("%d.%m.%Y")
+            for slot in day.get("СеткаРасписания", []):
+                if slot.get("НетЗанятия") or slot.get("ГруппыСтудентов", "")[0].get("name", "") == "":
+                    continue
 
-        month_num = MONTHS_RU.get(month_caption.get_text(strip=True).lower())
-        year = date.today().year
+                teacher = slot.get("Преподаватель", {}).get("name", "").strip() or "—"
+                lesson = slot.get("Дисциплина", {}).get("name", "").strip() or "—"
+                time_of_lesson = slot.get("Занятие", {}).get("name", "").strip() or "—"
+                cabinet = slot.get("Аудитория", "").strip()
+                is_online = slot.get("Дистанционно", False)
 
-        result = []
-        for cell in grid.select("div.lesson"):
-            # число дня
-            day_tag = cell.select_one("h5")
-            if not (day_tag and day_tag.text.strip().isdigit()):
-                continue
-            day = int(day_tag.text.strip())
+                lesson_type = slot.get("ВидНагрузки", {}).get("name", "").strip()
+                control_form = slot.get("ФормаКонтроля", {}).get("name", "").strip()
 
-            m, y = month_num, year
-            if day < 15 and month_num == 12:  # ячейки января грядущего года
-                m, y = 1, year + 1
-            elif day > 15 and month_num == 1:  # ячейки декабря прошлого года
-                m, y = 12, year - 1
+                if not lesson_type and is_online:
+                    lesson_type = "Дистанционно"
 
-            date_str = date(y, m, day).strftime("%d.%m.%Y")
+                if is_online and control_form:
+                    lesson_type += f" ({control_form})"
 
-            # аббревиатуры предметов
-            subjects = [
-                SUBJECTS_MAP.get(s.get_text(strip=True), s.get_text(strip=True))
-                for s in cell.select(".abbreviations span")
-            ]
+                lesson_type = lesson_type or "—"
 
-            result.append({"date": date_str, "subjects": subjects})
+                out.append({
+                    "date": datestr,
+                    "type": lesson_type,
+                    "lesson": lesson,
+                    "teacher": teacher,
+                    "time_of_lesson": time_of_lesson,
+                    "cabinet": cabinet
+                })
 
-        return result
-
-    def parse_month_view_full(self, html: str) -> list[dict]:
-        """
-        Разбирает сетку <div class="schedule‑lessons"> (режим «Месяц» в ЛК МТУСИ)
-        и возвращает список словарей:
-            - date:     "DD.MM.YYYY"
-            - subjects: ["[Тип] Пара", …]
-        """
-        soup = BeautifulSoup(html, "html.parser")
-        grid = soup.select_one("div.schedule-lessons")
-        month_caption = soup.select_one("strong.schedule-month")
-        if not grid or not month_caption:
-            return []
-
-        month_num = MONTHS_RU.get(month_caption.get_text(strip=True).lower())
-        year = date.today().year
-
-        result: list[dict] = []
-        for cell in grid.select("div.lesson"):
-            # день месяца
-            day_tag = cell.select_one("h5")
-            if not (day_tag and day_tag.text.strip().isdigit()):
-                continue
-            day = int(day_tag.text.strip())
-
-            m, y = month_num, year
-            if day < 15 and month_num == 12:  # январь будущего года
-                m, y = 1, year + 1
-            elif day > 15 and month_num == 1:  # декабрь предыдущего года
-                m, y = 12, year - 1
-
-            date_str = date(y, m, day).strftime("%d.%m.%Y")
-
-            dots = cell.select(".dots .circle-dot")
-            spans = cell.select(".abbreviations span")
-            subjects: list[str] = []
-
-            if len(dots) == len(spans) and dots:
-                for dot, span in zip(dots, spans):
-                    abbrev = span.get_text(strip=True)
-                    abbrev = SUBJECTS_MAP.get(abbrev, abbrev)
-
-                    color_cls = next((c for c in dot.get("class", []) if c.startswith("bg-")), "")
-                    lesson_type = TYPES_MAP.get(color_cls, "")
-
-                    subjects.append(f"[{lesson_type}]\n{abbrev}" if lesson_type else abbrev)
-            else:
-                subjects = [
-                    SUBJECTS_MAP.get(s.get_text(strip=True), s.get_text(strip=True))
-                    for s in spans
-                ]
-
-            result.append({"date": date_str, "subjects": subjects})
-
-        return result
+        return out
 
     def get_groups(self, level: str, form: str, faculty: str, course: str) -> list[str]:
         driver = self.init_driver(True)

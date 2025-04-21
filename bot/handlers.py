@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from collections import defaultdict
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler, ContextTypes
@@ -82,7 +83,7 @@ def register_handlers(app, keyboard: ReplyKeyboardMarkup):
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("login", login(encryptor)))
     app.add_handler(CommandHandler("get_tasks", get_tasks(settings, encryptor, scraper)))
-    app.add_handler(CommandHandler("get_timetable", get_timetable(encryptor, scraper)))
+    app.add_handler(CommandHandler("get_timetable", get_timetable(settings, encryptor, scraper)))
 
     # conv = ConversationHandler(
     #     entry_points=[CommandHandler("configure", start_config)],
@@ -255,7 +256,7 @@ def get_tasks(settings: Settings, encryptor: EncryptionService, scraper: Scraper
     return _get_tasks
 
 
-def get_timetable(encryptor, scraper):
+def get_timetable(settings: Settings, encryptor, scraper):
     """
     /get_timetable логика: Парсим расписание с сайта личного кабинета.
     """
@@ -276,34 +277,66 @@ def get_timetable(encryptor, scraper):
         )
 
         def _fetch():
-            drv = scraper.init_driver()
+            driver = scraper.init_driver()
             try:
                 return scraper.get_timetable(
-                    drv,
+                    driver,
                     user.mtuci_login,
                     encryptor.decrypt(user.mtuci_password)
                 )
-            except:
+            except Exception as e:
+                print(e)
                 pass
 
-        month_data = await asyncio.to_thread(_fetch)
-
-        if not month_data:
-            await status_msg.edit_text(
-                "Ошибка получения данных, попробуйте ещё раз или обратитесь к https://t.me/GodzzilaS.",
-                parse_mode="Markdown"
-            )
+        try:
+            entries = await asyncio.to_thread(_fetch)
+        except Exception:
+            await status_msg.edit_text("❌ Ошибка при получении расписания.")
             return
 
-        lines = []
-        for day in month_data:
-            if day["subjects"]:
-                lines.append(f"*{day['date']}*")
-                lines.extend(f"  • `{subj}`" for subj in day["subjects"])
-                lines.append("")
+        entries = sorted(entries, key=lambda e: (e["date"], e["time_of_lesson"]))
 
-        text = "\n".join(lines) or "📭 Занятий на этот месяц не найдено."
-        await status_msg.edit_text(text, parse_mode="Markdown")
+        grouped = defaultdict(lambda: defaultdict(list))
+        for e in entries:
+            grouped[e['date']][e['time_of_lesson']].append(e)
+
+        chunks: list[str] = []
+        current = ""
+
+        for date in sorted(grouped.keys()):
+            date_header = f"\n📆 *{date}*\n"
+            day_block = date_header
+
+            for time_of_lesson in sorted(grouped[date].keys()):
+                lessons = grouped[date][time_of_lesson]
+
+                combined = defaultdict(list)
+                for e in lessons:
+                    key = (e['type'], e['lesson'])
+                    combined[key].append((e['teacher'], e['cabinet']))
+
+                for (lesson_type, lesson_name), teachers in combined.items():
+                    day_block += f"**{lesson_type}** ({time_of_lesson})\n"
+                    day_block += f"▫️ *Предмет:* {lesson_name}\n"
+
+                    for teacher, cabinet in teachers:
+                        cab = f", {cabinet}" if lesson_type != "Дистанционно" else ""
+                        day_block += f"▫️ *Преподаватель:* {teacher}{cab}\n"
+
+                    day_block += "\n"
+
+            if len(current) + len(day_block) > settings.MAX_MESSAGE_LENGTH:
+                chunks.append(current.strip())
+                current = day_block
+            else:
+                current += day_block
+
+        if current:
+            chunks.append(current.strip())
+
+        await status_msg.edit_text(chunks[0], parse_mode="Markdown")
+        for part in chunks[1:]:
+            await update.message.reply_text(part, parse_mode="Markdown")
 
     return _get_timetable
 

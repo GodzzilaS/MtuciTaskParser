@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from dotenv import load_dotenv
 
 load_dotenv()
+BASE_DIR = os.path.abspath(os.path.dirname(__file__) + "/..")
 
 
 class Settings:
@@ -75,3 +76,5 @@ class Settings:
             }
         }
     }
+
+    LOG_FILE = os.getenv("LOG_FILE_PATH", os.path.join(BASE_DIR, "logs", "app.log"))

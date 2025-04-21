@@ -341,3 +341,47 @@ def schedule_settings_route():
     # GET
     interval = get_schedule_interval()
     return render_template('settings.html', interval=interval)
+
+
+@blueprint.route('/logs')
+def view_logs_route():
+    """
+    Показывает последние 200 строк лога.
+    """
+    log_path = current_app.config['SETTINGS'].LOG_FILE
+    print("DEBUG: смотрим лог по пути", log_path)
+    lines = []
+    if os.path.exists(log_path):
+        with open(log_path, encoding='utf-8', errors='ignore') as f:
+            for line in f.readlines():
+                lines.append(line.replace('[32m', ''))
+    return render_template('logs.html', logs=lines)
+
+
+@blueprint.route('/logs/download')
+def download_logs_route():
+    """
+    Скачать весь лог-файл.
+    """
+    log_path = current_app.config['SETTINGS'].LOG_FILE
+    if not os.path.exists(log_path):
+        flash("❌ Лог-файл не найден", "warning")
+        return redirect(url_for('main.view_logs_route'))
+    return send_file(log_path,
+                     as_attachment=True,
+                     download_name=os.path.basename(log_path))
+
+
+@blueprint.route('/logs/clear', methods=['POST'])
+def clear_logs_route():
+    """
+    Очистить лог-файл.
+    """
+    log_path = current_app.config['SETTINGS'].LOG_FILE
+    try:
+        open(log_path, 'w', encoding='utf-8').close()
+        flash("✅ Логи успешно очищены", "info")
+    except Exception as e:
+        logger.error("Ошибка при очистке логов: %s", e)
+        flash("❌ Не удалось очистить логи", "danger")
+    return redirect(url_for('main.view_logs_route'))

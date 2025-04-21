@@ -4,6 +4,7 @@ import os
 import platform
 import sys
 from datetime import timedelta
+from logging.handlers import RotatingFileHandler
 from threading import Thread
 
 import colorlog
@@ -30,6 +31,7 @@ LOG_COLORS = {
 for handler in logging.root.handlers[:]:
     logging.root.removeHandler(handler)
 
+
 formatter = colorlog.ColoredFormatter(
     fmt=LOG_FORMAT,
     datefmt=DATE_FORMAT,
@@ -44,6 +46,22 @@ handler.setFormatter(formatter)
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 root_logger.addHandler(handler)
+
+settings = Settings()
+log_path = settings.LOG_FILE
+log_dir = os.path.dirname(log_path)
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir, exist_ok=True)
+
+file_handler = RotatingFileHandler(
+    log_path,
+    maxBytes=50 * 1024 * 1024,
+    backupCount=1024,
+    encoding="utf-8"
+)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(formatter)
+root_logger.addHandler(file_handler)
 
 logger = logging.getLogger(__name__)
 

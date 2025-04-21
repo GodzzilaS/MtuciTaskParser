@@ -6,6 +6,7 @@ from telegram.ext import ContextTypes
 
 from core.db import insert
 from core.models.users import create_user, select_user, exist
+from services.scraper import Scraper
 from utils.check_utils import available_or_message, measure_duration
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,15 @@ def login(encryptor):
             return
 
         login_name, pwd = args
+        status_msg = await update.message.reply_text("🔄 Проверяем введенные данные...")
+
+        try:
+            scraper: Scraper = context.bot_data["scraper"]
+            scraper.login(scraper.init_driver(False), login_name, pwd)
+        except Exception:
+            await status_msg.edit_text("❌ Вы ввели неверные учётные данные!")
+            return
+
         encrypted = encryptor.encrypt(pwd)
         tg_id = update.effective_user.id
         username = update.effective_user.username or ""
@@ -42,6 +52,6 @@ def login(encryptor):
         else:
             create_user(tg_id, username, login_name, encrypted)
 
-        await update.message.reply_text("✅ Данные успешно сохранены!")
+        await status_msg.edit_text("✅ Данные успешно сохранены!")
 
     return _login

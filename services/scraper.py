@@ -30,6 +30,18 @@ SUBJECTS_MAP = {
     "ОП": "Основы права",
     "СИАОД": "Структуры и алгоритмы обработки данных"
 }
+OPTION_FLAGS = (
+    "--disable-gpu", "--disable-extensions", "--disable-dev-shm-usage",
+    "--no-sandbox", "--disable-background-timer-throttling",
+    "--disable-background-networking", "--disable-client-side-phishing-detection",
+    "--disable-default-apps", "--disable-popup-blocking", "--disable-translate",
+    "--disable-application-cache", "--disk-cache-size=0", "--aggressive-cache-discard",
+    "--no-zygote", "--incognito"
+)
+OPTION_PREFS = {
+    "profile.managed_default_content_settings.images": 2,
+    "profile.managed_default_content_settings.stylesheets": 2,
+}
 
 
 class Scraper:
@@ -41,24 +53,11 @@ class Scraper:
         insert("data", {"type": "driver_init", "timestamp": time.time()})
         options = Options()
         options.add_argument("--headless")
-        options.add_argument("--incognito")
-        options.add_argument("--window-size=1920,1080")
-        flags = [
-            "--disable-gpu", "--disable-extensions", "--disable-dev-shm-usage",
-            "--no-sandbox", "--disable-background-timer-throttling",
-            "--disable-background-networking", "--disable-client-side-phishing-detection",
-            "--disable-default-apps", "--disable-popup-blocking", "--disable-translate",
-            "--disable-application-cache", "--disk-cache-size=0", "--aggressive-cache-discard"
-        ]
 
-        for f in flags:
+        for f in OPTION_FLAGS:
             options.add_argument(f)
 
-        prefs = {
-            "profile.managed_default_content_settings.images": 2,
-            "profile.managed_default_content_settings.stylesheets": 2,
-        }
-        options.add_experimental_option("prefs", prefs)
+        options.add_experimental_option("prefs", OPTION_PREFS)
         options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
 
         driver = webdriver.Chrome(options=options)
@@ -66,14 +65,14 @@ class Scraper:
         if not load_css:
             driver.execute_cdp_cmd("Network.enable", {})
             driver.execute_cdp_cmd("Network.setBlockedURLs", {
-                "urls": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.woff2", "*.mp4"]
+                "urls": ["*.ttf", "*.svg", "*.css", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.woff2", "*.mp4"]
             })
 
         return driver
 
     def login(self, driver, username: str, password: str):
         insert("data", {"type": "authorization", "timestamp": time.time()})
-        wait = WebDriverWait(driver, 20)
+        wait = WebDriverWait(driver, 10)
         driver.get(self.settings.LOGIN_PAGE)
         wait.until(EC.presence_of_element_located((By.NAME, "username")))
         logger.info(f"[{username}] Входим в систему")
@@ -85,8 +84,10 @@ class Scraper:
 
     @staticmethod
     def _dom_click(driver: WebDriver, element):
-        """Генерирует последовательность pointer‑ и mouse‑событий,
-        которую ожидают скрипты Moodle/YUI."""
+        """
+        Генерирует последовательность pointer‑ и mouse‑событий,
+        которую ожидают скрипты Moodle/YUI.
+        """
         driver.execute_script(
             """
             const down  = new PointerEvent('pointerdown', {bubbles:true});
@@ -108,10 +109,9 @@ class Scraper:
         self._dom_click(driver, el)
         ActionChains(driver).pause(0.15).perform()
 
-    def _scroll_into_view(self, driver: WebDriver, el):
-        driver.execute_script(
-            "arguments[0].scrollIntoView({block:'center',inline:'center'});", el
-        )
+    @staticmethod
+    def _scroll_into_view(driver: WebDriver, el):
+        driver.execute_script("arguments[0].scrollIntoView({block:'center',inline:'center'});", el)
 
     def _open_drawer(self, driver, wait):
         toggle = wait.until(
@@ -239,13 +239,11 @@ class Scraper:
 
     def get_timetable(self, driver, login, pwd):
         """
-        Возвращает «сырое» JSON‑тело ответа от /ilk/x/getProcessor без сохранения.
+        Возвращает «сырое» JSON‑тело ответа от /ilk/x/getProcessor
         """
         self.login(driver, login, pwd)
         driver.get(self.settings.TIME_TABLE_URL)
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "div.schedule-lessons"))
-        )
+        WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.schedule-lessons")))
 
         data = None
         for entry in driver.get_log("performance"):
@@ -254,10 +252,7 @@ class Scraper:
                 url = msg["params"]["response"]["url"]
                 if "getProcessor" in url:
                     req_id = msg["params"]["requestId"]
-                    body = driver.execute_cdp_cmd(
-                        "Network.getResponseBody",
-                        {"requestId": req_id}
-                    )
+                    body = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": req_id})
                     data = json.loads(body["body"])
                     break
 
@@ -333,9 +328,7 @@ class Scraper:
             self.select_option(driver, "faculties", faculty)
             self.select_option(driver, "courses", course)
 
-            wait.until(
-                EC.presence_of_element_located((By.ID, "groups_container"))
-            )
+            wait.until(EC.presence_of_element_located((By.ID, "groups_container")))
             html = driver.page_source
             return self.list_groups_from_html(html)
         finally:
@@ -350,8 +343,8 @@ class Scraper:
 
     def parse_assignments_from_course(self, driver, course_link: str) -> list[list[str]]:
         """
-        Разбора задач одного курса.
-        Возвращает список необработанных записей.
+        Разбор задач одного курса
+        Возвращает список необработанных записей
         """
         wait = WebDriverWait(driver, 20)
         full = course_link if course_link.startswith("http") else urljoin(self.settings.BASE_URL, course_link)
@@ -422,7 +415,7 @@ class Scraper:
         """
         try:
             # Очистить кеш и куки
-            subprocess.check_call(["pip", "cache", "purge"])
+            # subprocess.check_call(["pip", "cache", "purge"])
             driver.execute_cdp_cmd('Network.clearBrowserCache', {})
             driver.execute_cdp_cmd('Network.clearBrowserCookies', {})
         except Exception:

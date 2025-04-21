@@ -23,7 +23,7 @@ def register_handlers(app, keyboard: ReplyKeyboardMarkup):
     scraper = Scraper(settings)
 
     # Доступ к scraper из любых хендлеров, если нужно
-    app.bot_data["scraper"] = scraper
+    app.bot_data["scraper"]: Scraper = scraper
 
     # Основные команды
     app.add_handler(CommandHandler("start", start))

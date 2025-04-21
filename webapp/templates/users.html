@@ -32,7 +32,7 @@
 <div id="editModal" class="modal-wrapper">
   <div class="modal-card">
     <h3 id="header">Редактирование пользователя {{ telegram_id }}</h3>
-    <form id="editForm" method="POST" action="{{ url_for('main.update_user') }}">
+    <form id="editForm" method="POST" action="{{ url_for('users.update_user') }}">
       <input type="hidden" id="telegram_id" name="telegram_id">
 
       <div class="input-group">
@@ -212,7 +212,7 @@
 
   document.getElementById('deleteBtn').addEventListener('click', function() {
       const form = document.getElementById('editForm');
-      form.action = "{{ url_for('main.delete_user') }}";
+      form.action = "{{ url_for('users.delete_user') }}";
       form.submit();
   });
 </script>

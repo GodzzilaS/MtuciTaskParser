@@ -47,10 +47,10 @@
     <div class="dim small">🔑 Всего входов: {{ authorizations_on_site }}</div>
   </div>
   <div class="menu-item" onclick="window.location.href='{{ url_for('main.root') }}'">📊 Основная</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('main.users_list_route') }}'">👤 Пользователи</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('main.view_logs_route') }}'">📓 Логи</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('main.schedule_settings_route') }}'">⚙ Настройки</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('main.logout') }}'">🚪 Выход</div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('users.view_users') }}'">👤 Пользователи</div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('logs.view_logs') }}'">📓 Логи</div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('settings.view_settings') }}'">⚙ Настройки</div>
+  <div class="menu-item" onclick="window.location.href='{{ url_for('auth.logout') }}'">🚪 Выход</div>
 </nav>
 {% endblock %}
 <main class="content">

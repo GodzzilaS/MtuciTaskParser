@@ -15,8 +15,8 @@ from telegram.ext import ApplicationBuilder, Application
 from core.settings import Settings
 from bot import register_handlers
 from scheduler import background_check
-from utils import blueprints_utils
 from utils.logger_utils import SafeColorHandler, CustomLogMiddleware
+from webapp.routes import register_blueprints
 
 LOG_FORMAT = "[{asctime}] {log_color}{name:^24} | {levelname:^8} | {message}"
 DATE_FORMAT = "%d.%m.%Y %H:%M:%S"
@@ -78,7 +78,7 @@ def create_flask_app(settings: Settings) -> Flask:
     app.config["SESSION_PERMANENT"] = True
     app.secret_key = settings.ENCRYPTION_KEY
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
-    blueprints_utils.inject('webapp', app)
+    register_blueprints(app)
 
     @app.errorhandler(404)
     def page_not_found(e):

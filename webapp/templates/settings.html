@@ -3,7 +3,7 @@
 {% block content %}
 <div class="card">
   <h2 class="card-title">Настройка интервала фоновой проверки</h2>
-  <form method="post" action="{{ url_for('main.schedule_settings_route') }}">
+  <form method="post" action="{{ url_for('settings.view_settings') }}">
     <div class="input-group">
       <label for="interval">Интервал (минуты)</label>
       <input

@@ -15,8 +15,8 @@
   </div>
 
   <div class="button-submit-panel">
-    <a href="{{ url_for('main.download_logs_route') }}" class="btn-toggle">Скачать весь лог</a>
-    <form method="post" action="{{ url_for('main.clear_logs_route') }}" style="display:inline;">
+    <a href="{{ url_for('logs.download_logs') }}" class="btn-toggle">Скачать весь лог</a>
+    <form method="post" action="{{ url_for('logs.clear_logs') }}" style="display:inline;">
       <button type="submit" class="btn-toggle-delete">Очистить логи</button>
     </form>
   </div>

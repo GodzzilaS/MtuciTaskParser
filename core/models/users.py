@@ -143,3 +143,7 @@ def select_user(telegram_id) -> User:
 
 def custom_select(request):
     return map(User, db.find(collection_name, request))
+
+
+def remove_user(telegram_id) -> None:
+    db.delete_one(collection_name, {"telegram_id": telegram_id})

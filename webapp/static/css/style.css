@@ -272,6 +272,22 @@ body {
   box-shadow: 0 0 25px rgba(0, 255, 136, 0.35);
 }
 
+.btn-toggle-delete {
+  padding: 0.75rem 1.25rem;
+  background: var(--danger);
+  color: #000;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease-in-out;
+  box-shadow: var(--shadow);
+}
+
+.btn-toggle-delete:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgb(194, 44, 44);
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

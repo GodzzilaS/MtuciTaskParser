@@ -2,7 +2,7 @@ import json
 import logging
 import time
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from flask import Blueprint, render_template, redirect, url_for, request, session, flash, current_app
@@ -253,6 +253,35 @@ def update_user():
             flash(f"Данные пользователя {user.telegram_username} успешно обновлены", "info")
         else:
             flash("Нет изменений для сохранения", "info")
+
+    except ValueError as e:
+        flash(f"Ошибка формата данных: {str(e)}", "error")
+    except Exception as e:
+        logger.error(f"Ошибка при обновлении пользователя: {str(e)}")
+        flash("Произошла ошибка при обновлении", "error")
+
+    return redirect(url_for("main.users_list_route"))
+
+
+@blueprint.route("/delete_user", methods=["POST"])
+def delete_user():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("main.login"))
+
+    try:
+        telegram_id = request.form.get('telegram_id')
+        if not telegram_id:
+            flash("Не указан идентификатор пользователя", "error")
+            return redirect(url_for("main.users_list_route"))
+
+        user = users.select_user(int(telegram_id))
+        if not user:
+            flash("Пользователь не найден", "error")
+            return redirect(url_for("main.users_list_route"))
+
+        users.remove_user(int(telegram_id))
+
+        flash(f"Пользователь удален", "info")
 
     except ValueError as e:
         flash(f"Ошибка формата данных: {str(e)}", "error")

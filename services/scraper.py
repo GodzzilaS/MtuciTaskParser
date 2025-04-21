@@ -291,6 +291,9 @@ class Scraper:
                 lesson_type = slot.get("ВидНагрузки", {}).get("name", "").strip()
                 control_form = slot.get("ФормаКонтроля", {}).get("name", "").strip()
 
+                if control_form == "Зачет":
+                    control_form = "Зачёт (ПЕРЕСДАЧА)"
+
                 if not lesson_type and is_online:
                     lesson_type = "Дистанционно"
 

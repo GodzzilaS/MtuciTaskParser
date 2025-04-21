@@ -82,8 +82,8 @@ def register_handlers(app, keyboard: ReplyKeyboardMarkup):
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("login", login(encryptor)))
-    app.add_handler(CommandHandler("get_tasks", get_tasks(settings, encryptor, scraper)))
-    app.add_handler(CommandHandler("get_timetable", get_timetable(settings, encryptor, scraper)))
+    app.add_handler(CommandHandler("get_tasks", get_tasks(settings, encryptor, scraper), block=False))
+    app.add_handler(CommandHandler("get_timetable", get_timetable(settings, encryptor, scraper), block=False))
 
     # conv = ConversationHandler(
     #     entry_points=[CommandHandler("configure", start_config)],

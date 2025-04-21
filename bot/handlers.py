@@ -18,59 +18,59 @@ from utils.status_utils import status_emoji
 
 logger = logging.getLogger(__name__)
 
-(
-    LEVEL, FORM, FACULTY,
-    COURSE, GROUP
-) = range(5)
-LEVELS = ("Бакалавариат", "Магистратура", "Специалитет", "Аспирантура")
-FORMS = ("Очная", "Очно-заочная", "Заочная")
-FORMS_MAP = {
-    "Бакалавариат": ["Очная", "Очно-заочная", "Заочная"],
-    "Магистратура": ["Очная", "Очно-заочная", "Заочная"],
-    "Специалитет": ["Очная"],
-    "Аспирантура": ["Очная"],
-}
-FACULTIES_MAP = {
-    "Бакалавариат": {
-        "Очная": [
-            "Информационные технологии",
-            "Кибернетика и информационная безопасность",
-            "Радио и телевидение",
-            "Сети и системы связи",
-            "Цифровая экономика и массовые коммуникации"
-        ],
-        "Очно-заочная": [
-            "Центр индивидуального обучения"
-        ],
-        "Заочная": [
-            "Центр заочного обучения по программам бакалавриата",
-            "Центр индивидуального обучения"
-        ]
-    },
-    "Магистратура": {
-        "Очная": [
-            "Информационные технологии",
-            "Кибернетика и информационная безопасность",
-            "Радио и телевидение",
-            "Сети и системы связи",
-            "Цифровая экономика и массовые коммуникации"
-        ],
-        "Очно-заочная": [
-            "Центр заочного обучения по программам магистратуры"
-        ],
-        "Заочная": [
-            "Центр заочного обучения по программам бакалавриата",
-            "Центр заочного обучения по программам магистратуры"
-        ]
-    },
-    "Специалитет": {
-        "Очная": ["Кибернетика и информационная безопасность"]
-    },
-    "Аспирантура": {
-        "Очная": ["Отдел аспирантуры"]
-    }
-}
-COURSES = ("Первый", "Второй", "Третий", "Четвёртый", "Пятый")
+# (
+#     LEVEL, FORM, FACULTY,
+#     COURSE, GROUP
+# ) = range(5)
+# LEVELS = ("Бакалавариат", "Магистратура", "Специалитет", "Аспирантура")
+# FORMS = ("Очная", "Очно-заочная", "Заочная")
+# FORMS_MAP = {
+#     "Бакалавариат": ["Очная", "Очно-заочная", "Заочная"],
+#     "Магистратура": ["Очная", "Очно-заочная", "Заочная"],
+#     "Специалитет": ["Очная"],
+#     "Аспирантура": ["Очная"],
+# }
+# FACULTIES_MAP = {
+#     "Бакалавариат": {
+#         "Очная": [
+#             "Информационные технологии",
+#             "Кибернетика и информационная безопасность",
+#             "Радио и телевидение",
+#             "Сети и системы связи",
+#             "Цифровая экономика и массовые коммуникации"
+#         ],
+#         "Очно-заочная": [
+#             "Центр индивидуального обучения"
+#         ],
+#         "Заочная": [
+#             "Центр заочного обучения по программам бакалавриата",
+#             "Центр индивидуального обучения"
+#         ]
+#     },
+#     "Магистратура": {
+#         "Очная": [
+#             "Информационные технологии",
+#             "Кибернетика и информационная безопасность",
+#             "Радио и телевидение",
+#             "Сети и системы связи",
+#             "Цифровая экономика и массовые коммуникации"
+#         ],
+#         "Очно-заочная": [
+#             "Центр заочного обучения по программам магистратуры"
+#         ],
+#         "Заочная": [
+#             "Центр заочного обучения по программам бакалавриата",
+#             "Центр заочного обучения по программам магистратуры"
+#         ]
+#     },
+#     "Специалитет": {
+#         "Очная": ["Кибернетика и информационная безопасность"]
+#     },
+#     "Аспирантура": {
+#         "Очная": ["Отдел аспирантуры"]
+#     }
+# }
+# COURSES = ("Первый", "Второй", "Третий", "Четвёртый", "Пятый")
 
 
 def register_handlers(app, keyboard: ReplyKeyboardMarkup):
@@ -340,170 +340,170 @@ def get_timetable(settings: Settings, encryptor, scraper):
 
     return _get_timetable
 
-
-async def start_config(update, context):
-    # Шаг 1: выбор уровня образования
-    keyboard = [[InlineKeyboardButton(lvl, callback_data=lvl)] for lvl in LEVELS] + [
-        [InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
-    await update.message.reply_text("Шаг 1: выберите уровень образования:", reply_markup=InlineKeyboardMarkup(keyboard))
-    return LEVEL
-
-
-async def on_level(update, context):
-    # Шаг 2: выбор формы обучения
-    lvl = update.callback_query.data
-    context.user_data['level'] = lvl
-    await update.callback_query.answer()
-
-    forms = FORMS_MAP[lvl]
-    keyboard = [[InlineKeyboardButton(f, callback_data=f)] for f in forms]
-    keyboard += [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
-
-    await update.callback_query.edit_message_text(
-        f"Шаг 2: уровень *{lvl}* выбран.\nТеперь форма обучения:",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-    return FORM
-
-
-async def on_form(update, context):
-    # Шаг 3: выбор факультета
-    form = update.callback_query.data
-    context.user_data["form"] = form
-    await update.callback_query.answer()
-
-    level = context.user_data["level"]
-    facs = FACULTIES_MAP.get(level, {}).get(form, [])
-
-    if not facs:
-        await update.callback_query.edit_message_text(
-            "⚠️ К сожалению, для выбранных уровня и формы обучения факультетов не найдено.\nОбратитесь к https://t.me/GodzzilaS.",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
-            )
-        )
-        return FORM
-
-    fac_ids = {f"fac_{i}": name for i, name in enumerate(facs)}
-    context.user_data["fac_ids"] = fac_ids
-
-    keyboard = [
-        [InlineKeyboardButton(name, callback_data=fac_id)]
-        for fac_id, name in fac_ids.items()
-    ]
-    keyboard.append([InlineKeyboardButton("❌ Отмена", callback_data="cancel")])
-
-    await update.callback_query.edit_message_text(
-        f"Шаг 3: форма *{form}*.\nТеперь выберите факультет:",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-    return FACULTY
-
-
-async def on_faculty(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Шаг 4: выбор курса
-    fac_id = update.callback_query.data
-    await update.callback_query.answer()
-
-    faculty = context.user_data['fac_ids'].get(fac_id)
-    context.user_data['faculty'] = faculty or "—"
-
-    level = context.user_data['level']
-    form = context.user_data['form']
-
-    courses = COURSES_MAP.get(level, {}).get(form, {}).get(faculty, [])
-
-    if not courses:
-        await update.callback_query.edit_message_text(
-            "⚠️ Для выбранных уровня, формы и факультета курсов не найдено.\nОбратитесь к https://t.me/GodzzilaS.",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
-            )
-        )
-        return FACULTY
-
-    keyboard = [[InlineKeyboardButton(c, callback_data=c)] for c in courses]
-    keyboard.append([InlineKeyboardButton("❌ Отмена", callback_data="cancel")])
-
-    await update.callback_query.edit_message_text(
-        f"Шаг 4: факультет *{faculty}*.\nТеперь выберите курс:",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-    return COURSE
-
-
-async def on_course(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Шаг 5: выбор группы
-    context.user_data['course'] = update.callback_query.data
-    await update.callback_query.answer()
-
-    scraper: Scraper = context.bot_data["scraper"]
-    lvl = context.user_data['level']
-    form = context.user_data['form']
-    faculty = context.user_data['faculty']
-    course = context.user_data['course']
-
-    waiting_msg = "⏳ Получаю список групп, пожалуйста подождите..."
-    await update.callback_query.edit_message_text(waiting_msg)
-
-    # ── получаем список групп в отдельном потоке ────────────
-    def _fetch():
-        logger.info(f"{lvl}, {form}, {faculty}, {course}")
-        return scraper.get_groups(lvl, form, faculty, course)
-
-    groups = await asyncio.to_thread(_fetch)
-
-    if not groups:
-        await update.callback_query.edit_message_text(
-            "⚠️ Для выбранных параметров группы не найдены.\nОбратитесь к https://t.me/GodzzilaS.",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
-            )
-        )
-        return COURSE
-
-    keyboard = [[InlineKeyboardButton(g, callback_data=g)] for g in groups]
-    keyboard.append([InlineKeyboardButton("❌ Отмена", callback_data="cancel")])
-
-    await update.callback_query.edit_message_text(
-        f"Курс: *{course}*\n\nВыберите группу:",
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-    return GROUP
-
-
-async def on_group(update, context):
-    # Шаг 6: сохранение настроек
-    context.user_data['group'] = update.callback_query.data
-    await update.callback_query.answer()
-    await update.callback_query.edit_message_text(
-        "Отлично! Я запомнил:\n"
-        f"- Уровень: *{context.user_data['level']}*\n"
-        f"- Форма: *{context.user_data['form']}*\n"
-        f"- Факультет: *{context.user_data['faculty']}*\n"
-        f"- Курс: *{context.user_data['course']}*\n"
-        f"- Группа: *{context.user_data['group']}*",
-        parse_mode="Markdown"
-    )
-    tg_id = update.effective_user.id
-    user = select_user(tg_id)
-    user.education_level = context.user_data['level']
-    user.study_form = context.user_data['form']
-    user.faculty = context.user_data['faculty']
-    user.course = context.user_data['course']
-    user.group = context.user_data['group']
-    return ConversationHandler.END
-
-
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Отмена настройки
-    if update.callback_query:
-        await update.callback_query.answer()
-        await update.callback_query.message.reply_text("❌ Настройка отменена.")
-    else:
-        await update.message.reply_text("❌ Настройка отменена.")
-    return ConversationHandler.END
+#
+# async def start_config(update, context):
+#     # Шаг 1: выбор уровня образования
+#     keyboard = [[InlineKeyboardButton(lvl, callback_data=lvl)] for lvl in LEVELS] + [
+#         [InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
+#     await update.message.reply_text("Шаг 1: выберите уровень образования:", reply_markup=InlineKeyboardMarkup(keyboard))
+#     return LEVEL
+#
+#
+# async def on_level(update, context):
+#     # Шаг 2: выбор формы обучения
+#     lvl = update.callback_query.data
+#     context.user_data['level'] = lvl
+#     await update.callback_query.answer()
+#
+#     forms = FORMS_MAP[lvl]
+#     keyboard = [[InlineKeyboardButton(f, callback_data=f)] for f in forms]
+#     keyboard += [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
+#
+#     await update.callback_query.edit_message_text(
+#         f"Шаг 2: уровень *{lvl}* выбран.\nТеперь форма обучения:",
+#         parse_mode="Markdown",
+#         reply_markup=InlineKeyboardMarkup(keyboard)
+#     )
+#     return FORM
+#
+#
+# async def on_form(update, context):
+#     # Шаг 3: выбор факультета
+#     form = update.callback_query.data
+#     context.user_data["form"] = form
+#     await update.callback_query.answer()
+#
+#     level = context.user_data["level"]
+#     facs = FACULTIES_MAP.get(level, {}).get(form, [])
+#
+#     if not facs:
+#         await update.callback_query.edit_message_text(
+#             "⚠️ К сожалению, для выбранных уровня и формы обучения факультетов не найдено.\nОбратитесь к https://t.me/GodzzilaS.",
+#             reply_markup=InlineKeyboardMarkup(
+#                 [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
+#             )
+#         )
+#         return FORM
+#
+#     fac_ids = {f"fac_{i}": name for i, name in enumerate(facs)}
+#     context.user_data["fac_ids"] = fac_ids
+#
+#     keyboard = [
+#         [InlineKeyboardButton(name, callback_data=fac_id)]
+#         for fac_id, name in fac_ids.items()
+#     ]
+#     keyboard.append([InlineKeyboardButton("❌ Отмена", callback_data="cancel")])
+#
+#     await update.callback_query.edit_message_text(
+#         f"Шаг 3: форма *{form}*.\nТеперь выберите факультет:",
+#         parse_mode="Markdown",
+#         reply_markup=InlineKeyboardMarkup(keyboard)
+#     )
+#     return FACULTY
+#
+#
+# async def on_faculty(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     # Шаг 4: выбор курса
+#     fac_id = update.callback_query.data
+#     await update.callback_query.answer()
+#
+#     faculty = context.user_data['fac_ids'].get(fac_id)
+#     context.user_data['faculty'] = faculty or "—"
+#
+#     level = context.user_data['level']
+#     form = context.user_data['form']
+#
+#     courses = COURSES_MAP.get(level, {}).get(form, {}).get(faculty, [])
+#
+#     if not courses:
+#         await update.callback_query.edit_message_text(
+#             "⚠️ Для выбранных уровня, формы и факультета курсов не найдено.\nОбратитесь к https://t.me/GodzzilaS.",
+#             reply_markup=InlineKeyboardMarkup(
+#                 [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
+#             )
+#         )
+#         return FACULTY
+#
+#     keyboard = [[InlineKeyboardButton(c, callback_data=c)] for c in courses]
+#     keyboard.append([InlineKeyboardButton("❌ Отмена", callback_data="cancel")])
+#
+#     await update.callback_query.edit_message_text(
+#         f"Шаг 4: факультет *{faculty}*.\nТеперь выберите курс:",
+#         parse_mode="Markdown",
+#         reply_markup=InlineKeyboardMarkup(keyboard)
+#     )
+#     return COURSE
+#
+#
+# async def on_course(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     # Шаг 5: выбор группы
+#     context.user_data['course'] = update.callback_query.data
+#     await update.callback_query.answer()
+#
+#     scraper: Scraper = context.bot_data["scraper"]
+#     lvl = context.user_data['level']
+#     form = context.user_data['form']
+#     faculty = context.user_data['faculty']
+#     course = context.user_data['course']
+#
+#     waiting_msg = "⏳ Получаю список групп, пожалуйста подождите..."
+#     await update.callback_query.edit_message_text(waiting_msg)
+#
+#     # ── получаем список групп в отдельном потоке ────────────
+#     def _fetch():
+#         logger.info(f"{lvl}, {form}, {faculty}, {course}")
+#         return scraper.get_groups(lvl, form, faculty, course)
+#
+#     groups = await asyncio.to_thread(_fetch)
+#
+#     if not groups:
+#         await update.callback_query.edit_message_text(
+#             "⚠️ Для выбранных параметров группы не найдены.\nОбратитесь к https://t.me/GodzzilaS.",
+#             reply_markup=InlineKeyboardMarkup(
+#                 [[InlineKeyboardButton("❌ Отмена", callback_data="cancel")]]
+#             )
+#         )
+#         return COURSE
+#
+#     keyboard = [[InlineKeyboardButton(g, callback_data=g)] for g in groups]
+#     keyboard.append([InlineKeyboardButton("❌ Отмена", callback_data="cancel")])
+#
+#     await update.callback_query.edit_message_text(
+#         f"Курс: *{course}*\n\nВыберите группу:",
+#         parse_mode="Markdown",
+#         reply_markup=InlineKeyboardMarkup(keyboard)
+#     )
+#     return GROUP
+#
+#
+# async def on_group(update, context):
+#     # Шаг 6: сохранение настроек
+#     context.user_data['group'] = update.callback_query.data
+#     await update.callback_query.answer()
+#     await update.callback_query.edit_message_text(
+#         "Отлично! Я запомнил:\n"
+#         f"- Уровень: *{context.user_data['level']}*\n"
+#         f"- Форма: *{context.user_data['form']}*\n"
+#         f"- Факультет: *{context.user_data['faculty']}*\n"
+#         f"- Курс: *{context.user_data['course']}*\n"
+#         f"- Группа: *{context.user_data['group']}*",
+#         parse_mode="Markdown"
+#     )
+#     tg_id = update.effective_user.id
+#     user = select_user(tg_id)
+#     user.education_level = context.user_data['level']
+#     user.study_form = context.user_data['form']
+#     user.faculty = context.user_data['faculty']
+#     user.course = context.user_data['course']
+#     user.group = context.user_data['group']
+#     return ConversationHandler.END
+#
+#
+# async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     # Отмена настройки
+#     if update.callback_query:
+#         await update.callback_query.answer()
+#         await update.callback_query.message.reply_text("❌ Настройка отменена.")
+#     else:
+#         await update.message.reply_text("❌ Настройка отменена.")
+#     return ConversationHandler.END

@@ -100,7 +100,8 @@ async def _check_one_user(
                     parse_mode="HTML",
                     disable_web_page_preview=True
                 )
-
+            else:
+                print(text)
 
 def _check_user_sync(user, settings, scraper: Scraper, encryptor: EncryptionService):
     """

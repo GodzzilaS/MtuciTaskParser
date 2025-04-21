@@ -103,6 +103,16 @@ body {
   opacity: 0.6;
 }
 
+.form-menu-item {
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1.05rem;
+  text-decoration: none;
+  background: none;
+  border: none;
+  color: white;
+}
+
 .menu-item {
   margin: 0.5rem 1rem;
   padding: 1rem 1.5rem;

@@ -31,7 +31,7 @@
     - [x] Отправка уведомлений при изменениях статусов
 - [x] Замер времени выполнения команд (`measure_duration`)
 - [x] Логирование команд и ошибок
-- [ ] Привязать notification_enable к реальным показателям
+- [x] Привязать notification_enable к реальным показателям
 
 ## 3. Добавить веб‑админку на Flask (webapp/, utils/blueprints_utils.py)
 
@@ -45,7 +45,6 @@
         - [x] `maintenance_mode`
         - [x] `scheduled_enabled`
 - [x] Интеграция с моделями (`core/models`) для CRUD
-- [ ] Документация API админки в README
 
 ## 4. Расширенные функции и улучшения
 

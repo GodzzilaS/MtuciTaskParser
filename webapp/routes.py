@@ -329,6 +329,15 @@ def schedule_settings_route():
     """
     Интерфейс для изменения интервала фоновой проверки.
     """
+    data_coll = get_collection("data")
+    authorizations_on_site = data_coll.count_documents({"type": "authorization_on_site"})
+    login_time = session.get("login_time")
+    session_time = None
+    if login_time:
+        seconds = int(time.time() - login_time)
+        h, m, s = seconds // 3600, (seconds % 3600) // 60, seconds % 60
+        session_time = f"{h}:{m:02}:{s:02}" if h > 0 else f"{m}:{s:02}"
+
     if request.method == 'POST':
         try:
             interval = int(request.form.get('interval', 5))
@@ -336,11 +345,16 @@ def schedule_settings_route():
             flash(f"✅ Интервал проверки изменён: {interval} мин.", "info")
         except ValueError:
             flash("❌ Неверный формат интервала", "danger")
-        return redirect(url_for('main.schedule_settings_route'))
 
     # GET
     interval = get_schedule_interval()
-    return render_template('settings.html', interval=interval)
+    return render_template(
+        'settings.html',
+        admin=session.get("admin_username"),
+        interval=interval,
+        authorizations_on_site=authorizations_on_site,
+        session_time=session_time
+    )
 
 
 @blueprint.route('/logs')
@@ -349,13 +363,28 @@ def view_logs_route():
     Показывает последние 200 строк лога.
     """
     log_path = current_app.config['SETTINGS'].LOG_FILE
-    print("DEBUG: смотрим лог по пути", log_path)
+
+    data_coll = get_collection("data")
+    authorizations_on_site = data_coll.count_documents({"type": "authorization_on_site"})
+    login_time = session.get("login_time")
+    session_time = None
+    if login_time:
+        seconds = int(time.time() - login_time)
+        h, m, s = seconds // 3600, (seconds % 3600) // 60, seconds % 60
+        session_time = f"{h}:{m:02}:{s:02}" if h > 0 else f"{m}:{s:02}"
+
     lines = []
     if os.path.exists(log_path):
         with open(log_path, encoding='utf-8', errors='ignore') as f:
             for line in f.readlines():
                 lines.append(line.replace('[32m', ''))
-    return render_template('logs.html', logs=lines)
+    return render_template(
+        'logs.html',
+        admin=session.get("admin_username"),
+        logs=lines,
+        authorizations_on_site=authorizations_on_site,
+        session_time=session_time
+    )
 
 
 @blueprint.route('/logs/download')

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Задачи{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h2>📋 Список задач</h2>
+
+  <form method="get" class="button-submit-panel" style="margin-top: 1rem;">
+    <div class="input-group" style="margin-bottom: 0 !important">
+      <input type="text" name="user_id" placeholder="User ID" value="{{ filters.get('user_id','') }}">
+    </div>
+    <div class="input-group" style="margin-bottom: 0 !important">
+      <input type="text" name="course" placeholder="Курс" value="{{ filters.get('course','') }}">
+    </div>
+    <div class="input-group select-wrapper" style="margin-bottom: 0 !important">
+      <select name="response_status">
+        <option value="">Все статусы ответа</option>
+        {% for st in ['Ответы на задание еще не представлены','Отправлено для оценивания'] %}
+        <option value="{{st}}" {% if filters.get('response_status') == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="input-group select-wrapper" style="margin-bottom: 0 !important">
+      <select name="grade_status">
+        <option value="">Все статусы оценки</option>
+        {% for st in ['Не оценено','Оценено'] %}
+        <option value="{{st}}" {% if filters.get('grade_status') == st %}selected{% endif %}>{{ st }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn-toggle">Фильтровать</button>
+  </form>
+
+  <div class="users-list" style="margin-top: 2rem;">
+    {% for task in tasks %}
+    <div class="user-card">
+      <div class="user-info"><strong>ID пользователя:</strong> {{ task.user_id }} | <strong>Задача:</strong> <a class="telegram-link" href="{{ task.task_link }}" target="_blank">{{ task.task_name }}</a></div>
+      <div class="user-info"><strong>Курс:</strong> {{ task.course }}</div>
+      <div class="user-info">📅 <strong>Начато:</strong> {{ task.open_date }} | <strong>Заканчивается:</strong> {{ task.due_date }}
+      </div>
+      <div class="user-info">
+        <strong>Статус:</strong> 📨 {{ task.response_status }} | 🏁 {{ task.grade_status }}
+      </div>
+      <form action="{{ url_for('tasks.update_task', task_id=task.uuid) }}?{{ request.query_string|safe }}" method="post"
+            class="button-submit-panel">
+        <div class="select-wrapper">
+          <select name="response_status">
+            {% for st in ['Ответы на задание еще не представлены','Отправлено для оценивания'] %}
+            <option value="{{st}}" {% if task.response_status == st %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="select-wrapper">
+          <select name="grade_status">
+            {% for st in ['Не оценено','Оценено'] %}
+            <option value="{{st}}" {% if task.grade_status == st %}selected{% endif %}>{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn-toggle">Обновить</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -22,6 +22,7 @@ from .user_routes import users_bp
 from .check_routes import check_bp
 from .settings_routes import settings_bp
 from .logs_routes import logs_bp
+from .tasks_routes import tasks_bp
 
 
 def register_blueprints(app):
@@ -31,6 +32,7 @@ def register_blueprints(app):
     app.register_blueprint(check_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(logs_bp, url_prefix="/logs")
+    app.register_blueprint(tasks_bp, url_prefix="/tasks")
 
     @app.context_processor
     def inject_common():

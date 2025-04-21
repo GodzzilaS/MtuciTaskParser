@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-
+{% block title %}Настройки{% endblock %}
 {% block content %}
 <div class="card">
   <h2 class="card-title">Настройка интервала фоновой проверки</h2>
   <form method="post" action="{{ url_for('settings.view_settings') }}">
     <div class="input-group">
-      <label for="interval">Интервал (минуты)</label>
+      <label for="interval">Интервал в минутах</label>
       <input
           type="number"
           id="interval"

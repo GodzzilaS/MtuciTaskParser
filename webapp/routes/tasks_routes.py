@@ -8,22 +8,30 @@ tasks_bp = Blueprint('tasks', __name__)
 @tasks_bp.route('/', methods=['GET'])
 @login_required
 def view_tasks():
-    args = request.args
+    raw_args = request.args.to_dict(flat=True)
+    clean_args = {k: v for k, v in raw_args.items() if v}
+
+    if raw_args and clean_args != raw_args:
+        return redirect(url_for('tasks.view_tasks', **clean_args))
+
     filters = {}
-    if args.get('user_id'):
+    if 'user_id' in clean_args:
         try:
-            filters['user_id'] = int(args['user_id'])
+            filters['user_id'] = int(clean_args['user_id'])
         except ValueError:
             flash('User ID должен быть числом', 'warning')
-    if args.get('course'):
-        filters['course'] = args['course']
-    if args.get('response_status'):
-        filters['response_status'] = args['response_status']
-    if args.get('grade_status'):
-        filters['grade_status'] = args['grade_status']
+
+    if 'course' in clean_args:
+        filters['course'] = clean_args['course']
+
+    if 'response_status' in clean_args:
+        filters['response_status'] = clean_args['response_status']
+
+    if 'grade_status' in clean_args:
+        filters['grade_status'] = clean_args['grade_status']
 
     tasks = list(custom_select(filters))
-    return render_template('tasks.html', tasks=tasks, filters=args)
+    return render_template('tasks.html', tasks=tasks, filters=clean_args)
 
 @tasks_bp.route('/update/<task_id>', methods=['POST'])
 @login_required

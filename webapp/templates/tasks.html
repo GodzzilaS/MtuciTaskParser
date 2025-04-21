@@ -7,10 +7,10 @@
 
   <form method="get" class="button-submit-panel" style="margin-top: 1rem;">
     <div class="input-group" style="margin-bottom: 0 !important">
-      <input type="text" name="user_id" placeholder="User ID" value="{{ filters.get('user_id','') }}">
+      <input type="text" name="user_id" placeholder="ID пользователя" value="{{ filters.get('user_id','') }}">
     </div>
     <div class="input-group" style="margin-bottom: 0 !important">
-      <input type="text" name="course" placeholder="Курс" value="{{ filters.get('course','') }}">
+      <input type="text" name="course" placeholder="Дисциплина" value="{{ filters.get('course','') }}">
     </div>
     <div class="input-group select-wrapper" style="margin-bottom: 0 !important">
       <select name="response_status">
@@ -35,7 +35,7 @@
     {% for task in tasks %}
     <div class="user-card">
       <div class="user-info"><strong>ID пользователя:</strong> {{ task.user_id }} | <strong>Задача:</strong> <a class="telegram-link" href="{{ task.task_link }}" target="_blank">{{ task.task_name }}</a></div>
-      <div class="user-info"><strong>Курс:</strong> {{ task.course }}</div>
+      <div class="user-info"><strong>Дисциплина:</strong> {{ task.course }}</div>
       <div class="user-info">📅 <strong>Начато:</strong> {{ task.open_date }} | <strong>Заканчивается:</strong> {{ task.due_date }}
       </div>
       <div class="user-info">

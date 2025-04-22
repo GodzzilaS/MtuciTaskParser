@@ -5,7 +5,6 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from core.db import insert
-from core.models.command_config import CommandConfig
 from core.models.users import create_user, select_user, exist
 from services.scraper import Scraper
 from utils.check_utils import available_or_message, measure_duration
@@ -26,21 +25,20 @@ def login(encryptor):
             "command": "login",
             "timestamp": time.time()
         })
-        cfg = CommandConfig.get("login")
 
         args = context.args
         if len(args) != 2:
-            await update.message.reply_text(cfg.get_message("incorrect_format"))
+            await update.message.reply_text("❌ Неверный формат: /login логин пароль")
             return
 
         login_name, pwd = args
-        status_msg = await update.message.reply_text(cfg.get_message("check_data"))
+        status_msg = await update.message.reply_text("🔄 Проверяем введенные данные...")
 
         try:
             scraper: Scraper = context.bot_data["scraper"]
             scraper.login(scraper.init_driver(False), login_name, pwd)
         except Exception:
-            await status_msg.edit_text(cfg.get_message("incorrect_data"))
+            await status_msg.edit_text("❌ Вы ввели неверные учётные данные!")
             return
 
         encrypted = encryptor.encrypt(pwd)
@@ -54,6 +52,6 @@ def login(encryptor):
         else:
             create_user(tg_id, username, login_name, encrypted)
 
-        await status_msg.edit_text(cfg.get_message("correct_data"))
+        await status_msg.edit_text("✅ Данные успешно сохранены!")
 
     return _login

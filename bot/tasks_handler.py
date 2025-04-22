@@ -6,7 +6,6 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from core.db import insert
-from core.models.command_config import CommandConfig
 from core.models.tasks import create_tasks_bulk
 from core.models.users import select_user
 from utils.check_utils import available_or_message, measure_duration
@@ -24,11 +23,10 @@ def get_tasks(settings, encryptor, scraper):
     @available_or_message
     @measure_duration("get_tasks")
     async def _get_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        cfg = CommandConfig.get("get_tasks")
         tg_id = update.effective_user.id
         user = select_user(tg_id)
         if not user or not user.mtuci_login:
-            await update.message.reply_text(cfg.get_message("not_authorized"))
+            await update.message.reply_text("❌ Сначала авторизуйся через /login")
             return
 
         insert("data", {
@@ -38,7 +36,9 @@ def get_tasks(settings, encryptor, scraper):
         })
         pwd = encryptor.decrypt(user.mtuci_password)
 
-        status_msg = await update.message.reply_text(cfg.get_message("get_tasks_data"))
+        status_msg = await update.message.reply_text(
+            "🔄 Получаю задания, это займёт время..."
+        )
 
         def fetch_assignments():
             driver = scraper.init_driver()
@@ -60,7 +60,7 @@ def get_tasks(settings, encryptor, scraper):
             assignments_by_course = None
 
         if not assignments_by_course:
-            await status_msg.edit_text(cfg.get_message("not_found_tasks"))
+            await status_msg.edit_text("❌ Заданий не найдено.")
             return
 
         # Подготовка массива для bulk‑записи
@@ -86,7 +86,7 @@ def get_tasks(settings, encryptor, scraper):
         chunks: list[str] = []
         current = ""
         for course, raws in assignments_by_course.items():
-            header = cfg.get_message("header", course=course)
+            header = f"\n<b>🎓 {course}</b>\n"
             block = ""
             for item in raws:
                 grade_emo, resp_emo = status_emoji(item[5], item[6])

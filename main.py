@@ -77,7 +77,7 @@ def create_flask_app(settings: Settings) -> Flask:
     app.config["SETTINGS"]: Settings = settings
     app.config["SESSION_PERMANENT"] = True
     app.secret_key = settings.ENCRYPTION_KEY
-    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(minutes=5)
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=1)
     register_blueprints(app)
 
     @app.errorhandler(404)
@@ -101,7 +101,7 @@ def main():
 
     # 2. Настраиваем и запускаем Telegram‑бота
     keyboard = ReplyKeyboardMarkup(
-        [["/login", "/get_tasks"]],
+        [["/login", "/get_tasks", "/get_timetable"]],
         resize_keyboard=True
     )
 

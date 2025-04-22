@@ -25,3 +25,9 @@ task_template = {
     "last_change": "",
     "last_updated": 0
 }
+
+command_config_template = {
+    "name": "config",
+    "command": None,
+    "messages": {}
+}

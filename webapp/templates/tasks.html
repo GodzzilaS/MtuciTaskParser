@@ -16,7 +16,7 @@
       <select name="response_status">
         <option value="">Все статусы ответа</option>
         {% for st in ['Ответы на задание еще не представлены','Отправлено для оценивания'] %}
-        <option value="{{st}}" {% if filters.get('response_status') == st %}selected{% endif %}>{{ st }}</option>
+        <option value="{{st}}" {% if filters.get('response_status') == st %} selected {% endif %}>{{ st }}</option>
         {% endfor %}
       </select>
     </div>
@@ -24,7 +24,7 @@
       <select name="grade_status">
         <option value="">Все статусы оценки</option>
         {% for st in ['Не оценено','Оценено'] %}
-        <option value="{{st}}" {% if filters.get('grade_status') == st %}selected{% endif %}>{{ st }}</option>
+        <option value="{{st}}" {% if filters.get('grade_status') == st %} selected {% endif %}>{{ st }}</option>
         {% endfor %}
       </select>
     </div>
@@ -46,14 +46,14 @@
         <div class="select-wrapper">
           <select name="response_status">
             {% for st in ['Ответы на задание еще не представлены','Отправлено для оценивания'] %}
-            <option value="{{st}}" {% if task.response_status == st %}selected{% endif %}>{{ st }}</option>
+            <option value="{{st}}" {% if task.response_status== st %}selected{% endif %}>{{ st }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="select-wrapper">
           <select name="grade_status">
             {% for st in ['Не оценено','Оценено'] %}
-            <option value="{{st}}" {% if task.grade_status == st %}selected{% endif %}>{{ st }}</option>
+            <option value="{{st}}" {% if task.grade_status== st %}selected{% endif %}>{{ st }}</option>
             {% endfor %}
           </select>
         </div>

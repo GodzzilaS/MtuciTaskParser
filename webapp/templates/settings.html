@@ -2,6 +2,23 @@
 {% block title %}Настройки{% endblock %}
 {% block content %}
 <div class="card">
+  <h2 class="card-title">Профиль бота</h2>
+  <form method="post" action="{{ url_for('settings.update_bot_profile') }}">
+    <div class="input-group">
+      <label for="bot_name">Имя</label>
+      <input type="text" id="bot_name" name="bot_name" value="{{ bot_name }}" required>
+    </div>
+    <div class="input-group">
+      <label for="bot_about">О боте</label>
+      <input type="text" id="bot_about" name="bot_about" value="{{ bot_about }}" maxlength="120" required>
+    </div>
+    <div class="button-submit-panel">
+      <button type="submit" class="btn-toggle">Сохранить</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
   <h2 class="card-title">Настройка интервала фоновой проверки</h2>
   <form method="post" action="{{ url_for('settings.edit_interval') }}">
     <div class="input-group">

@@ -101,7 +101,7 @@ def main():
 
     # 2. Настраиваем и запускаем Telegram‑бота
     keyboard = ReplyKeyboardMarkup(
-        [["/login", "/get_tasks"]],
+        [["/login", "/get_tasks", "/get_timetable"]],
         resize_keyboard=True
     )
 

@@ -580,4 +580,13 @@ body {
 input,
 textarea {
   caret-color: auto;
+  cursor: text !important;
+}
+
+div {
+  cursor: default;
+}
+
+button, select {
+  cursor: pointer !important;
 }

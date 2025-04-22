@@ -42,8 +42,8 @@
   <div class="hamburger">☰</div>
   <nav class="sidebar">
     <div class="sidebar-header">
-      {{ admin }}
-      <div class="dim small">⏱ {{ session_time }} в сессии</div>
+      Админ панель
+      <div id="session-time" class="dim small" data-login-time="{{ session.get('login_time', 0) }}">⏱ {{ session_time }} в сессии</div>
       <div class="dim small">🔑 Всего входов: {{ authorizations_on_site }}</div>
     </div>
     <div class="menu-item" onclick="window.location.href='{{ url_for('main.root') }}'">📊 Основная</div>
@@ -77,6 +77,32 @@
       if (!e.target.closest('.sidebar') && !e.target.closest('.hamburger')) {
         document.querySelector('.sidebar').classList.remove('active');
       }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('session-time');
+      const loginTs = parseInt(el.dataset.loginTime, 10) * 1000;
+
+      function pad(n) {
+        return String(n).padStart(2, '0');
+      }
+
+      function updateTimer() {
+        const diffMs = Date.now() - loginTs;
+        if (diffMs < 0) return;
+        const totalSec = Math.floor(diffMs / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+
+        const str = h > 0
+          ? `${h}:${pad(m)}:${pad(s)}`
+          : `${m}:${pad(s)}`;
+
+        el.textContent = `⏱ ${str} в сессии`;
+      }
+
+      setInterval(updateTimer, 1000);
     });
   </script>
 {% endblock %}

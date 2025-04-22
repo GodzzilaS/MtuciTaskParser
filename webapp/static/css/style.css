@@ -543,15 +543,43 @@ body {
   display: flex;
   gap: 10px;
   align-items: center;
-}
-
-.input-group.row input {
-  flex: 1;
-  min-width: 0;
-}
-
-.input-group.row {
   padding: 0 10px;
   font-size: 18px;
-  height: 36px;
+  margin-bottom: 10px;
 }
+
+.input-group.row input,
+.input-group.row textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 0.8rem;
+  background: var(--bg-one-more-darker);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.input-group.row textarea {
+  resize: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  min-height: 36px;
+  max-height: 200px;
+}
+
+.field-separator {
+  opacity: 0.5;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0 6px;
+}
+
+.btn-toggle-delete {
+  height: 36px;
+  font-size: 20px;
+  padding: 0 12px;
+  border-radius: 8px;
+}
+

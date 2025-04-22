@@ -7,6 +7,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from core.db import insert
+from core.models.command_config import CommandConfig
 from core.models.users import select_user
 from utils.check_utils import available_or_message, measure_duration
 
@@ -21,10 +22,11 @@ def get_timetable(settings, encryptor, scraper):
     @available_or_message
     @measure_duration("get_timetable")
     async def _get_timetable(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        cfg = CommandConfig.get("get_timetable")
         tg_id = update.effective_user.id
         user = select_user(tg_id)
         if not user or not user.mtuci_login:
-            await update.message.reply_text("❌ Сначала авторизуйся через /login")
+            await update.message.reply_text(cfg.get_message("not_authorized"))
             return
 
         insert("data", {
@@ -33,7 +35,7 @@ def get_timetable(settings, encryptor, scraper):
             "timestamp": time.time()
         })
 
-        status_msg = await update.message.reply_text("🔄 Получаю календарь на месяц, это может занять время…")
+        status_msg = await update.message.reply_text(cfg.get_message("get_timetable_data"))
 
         def _fetch():
             driver = scraper.init_driver()
@@ -49,7 +51,7 @@ def get_timetable(settings, encryptor, scraper):
         try:
             entries = await asyncio.to_thread(_fetch)
         except Exception:
-            await status_msg.edit_text("❌ Ошибка при получении расписания.")
+            await status_msg.edit_text(cfg.get_message("error_collecting_data"))
             return
 
         entries = sorted(entries, key=lambda e: (e["date"], e["time_of_lesson"]))

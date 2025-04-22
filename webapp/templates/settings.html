@@ -3,7 +3,7 @@
 {% block content %}
 <div class="card">
   <h2 class="card-title">Настройка интервала фоновой проверки</h2>
-  <form method="post" action="{{ url_for('settings.view_settings') }}">
+  <form method="post" action="{{ url_for('settings.edit_interval') }}">
     <div class="input-group">
       <label for="interval">Интервал в минутах</label>
       <input
@@ -12,12 +12,147 @@
           name="interval"
           min="1"
           value="{{ interval }}"
-          class=""
+          required
       >
     </div>
     <div class="button-submit-panel">
-      <button type="submit" class="btn-toggle">Сохранить</button>
+      <button type="submit" class="btn-toggle">Сохранить интервал</button>
     </div>
   </form>
 </div>
+
+<div class="card">
+  <h2 class="card-title">Управление командами</h2>
+
+  <div class="stats-grid">
+    {% for cfg in command_configs %}
+    <div class="user-card" onclick='openEditModal({{ cfg|tojson }})'>
+      <span class="stat-value">/{{ cfg.command }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="button-submit-panel">
+    <button onclick='openAddCommandModal()' class="btn-toggle">Добавить команду</button>
+  </div>
+</div>
+
+<div id="addCommandModal" class="modal-wrapper">
+  <div class="modal-card">
+    <h3>Добавление команды</h3>
+    <form method="post" action="{{ url_for('settings.create_command') }}">
+      <div class="select-wrapper">
+        <div class="input-group">
+          <label>Название команды</label>
+          <input type="text" name="new_command_name" id="new_command_name" required>
+        </div>
+      </div>
+      <div class="button-submit-panel">
+        <button type="button" class="btn-toggle" onclick="closeAddCommandModal()">Отмена</button>
+        <button type="submit" class="btn-toggle">Добавить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="editModal" class="modal-wrapper">
+  <div class="modal-card" style="width: 95%; max-width: 95%">
+    <h3 id="header">Редактирование команды</h3>
+    <form id="editForm" method="POST" action="{{ url_for('settings.update_command') }}">
+      <input type="hidden" name="command_name" id="command_name">
+
+      <div id="messagesContainer"></div>
+
+      <div class="button-submit-panel">
+        <button type="button" class="btn-toggle-delete" onclick="deleteCommand()">Удалить команду</button>
+        <button type="button" class="btn-toggle" onclick="closeEditModal()">Отмена</button>
+        <button type="button" class="btn-toggle" onclick="addMessageField()">Добавить поле</button>
+        <button type="submit" class="btn-toggle">Сохранить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let messageIndex = 0;
+
+  function openEditModal(cfg) {
+    const config = typeof cfg === 'string' ? JSON.parse(cfg) : cfg;
+
+    document.getElementById('header').textContent = `Редактирование /${config.command}`;
+    document.getElementById('command_name').value = config.command;
+
+    const container = document.getElementById('messagesContainer');
+    container.innerHTML = '';
+
+    if (config.messages && typeof config.messages === 'object') {
+      Object.entries(config.messages).forEach(([key, value]) => {
+        addMessageField(key, value);
+      });
+    } else {
+      addMessageField();
+    }
+
+    document.getElementById('editModal').style.display = 'flex';
+  }
+
+  function openAddCommandModal() {
+    document.getElementById('addCommandModal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+  }
+
+  function closeAddCommandModal() {
+    document.getElementById('addCommandModal').style.display = 'none';
+  }
+
+  function addMessageField(key = '', value = '') {
+    messageIndex++;
+    const template = `
+      <div class="message-group">
+        <div class="input-group row">
+          <input
+            type="text"
+            name="key__${messageIndex}"
+            placeholder="Ключ"
+            value="${key}"
+            required
+          >:
+          <input
+            name="value__${messageIndex}"
+            placeholder="Текст сообщения"
+            required
+            value="${value}"
+          >
+          <button type="button" class="btn-toggle-delete" onclick="removeMessageField(this)">×</button>
+        </div>
+      </div>`;
+
+    document.getElementById('messagesContainer').insertAdjacentHTML('beforeend', template);
+  }
+
+  function removeMessageField(button) {
+    button.closest('.message-group').remove();
+  }
+
+  function deleteCommand() {
+    const form = document.getElementById('editForm');
+    form.action = "{{ url_for('settings.delete_command') }}";
+    form.submit();
+  }
+
+  document.getElementById('addCommandModal').addEventListener('click', function (event) {
+    if (event.target.id === 'addCommandModal') {
+      closeAddCommandModal();
+    }
+  });
+
+  document.getElementById('editModal').addEventListener('click', function (event) {
+    if (event.target.id === 'editModal') {
+      closeEditModal();
+    }
+  });
+</script>
 {% endblock %}

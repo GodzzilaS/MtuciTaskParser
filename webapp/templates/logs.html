@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Логи{% endblock %}
 {% block content %}
-<div class="card">
-  <h2 class="card-title">Логи</h2>
-  <div class="stat-full">
-    <span class="stat-label">Показано строк:</span>
-    <span class="stat-value">{{ logs|length }}</span>
-  </div>
+  <div class="card">
+    <h2 class="card-title">Логи</h2>
+    <div class="stat-full">
+      <span class="stat-label">Показано строк:</span>
+      <span class="stat-value">{{ logs|length }}</span>
+    </div>
 
-  <div class="log-container">
-    <pre>
-      {{ logs|join('') }}
-    </pre>
-  </div>
+    <div class="log-container">
+      <pre>
+        {{ logs|join('') }}
+      </pre>
+    </div>
 
-  <div class="button-submit-panel">
-    <a href="{{ url_for('logs.download_logs') }}" class="btn-toggle">Скачать весь лог</a>
-    <form method="post" action="{{ url_for('logs.clear_logs') }}" style="display:inline;">
-      <button type="submit" class="btn-toggle-delete">Очистить логи</button>
-    </form>
+    <div class="button-submit-panel">
+      <a href="{{ url_for('logs.download_logs') }}" class="btn-toggle">Скачать весь лог</a>
+      <form method="post" action="{{ url_for('logs.clear_logs') }}" style="display:inline;">
+        <button type="submit" class="btn-toggle-delete">Очистить логи</button>
+      </form>
+    </div>
   </div>
-</div>
 {% endblock %}

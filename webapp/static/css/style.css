@@ -19,6 +19,7 @@
 }
 
 body {
+  caret-color: transparent;
   background: var(--bg-dark);
   color: var(--text);
   min-height: 100vh;
@@ -574,4 +575,9 @@ body {
   font-size: 20px;
   line-height: 1;
   padding: 0 6px;
+}
+
+input,
+textarea {
+  caret-color: auto;
 }

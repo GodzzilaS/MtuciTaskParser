@@ -5,80 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{% endblock %}</title>
   {% block head %}
-  <link rel="stylesheet" href="/static/css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
-  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='favicon/android-chrome-192x192.png') }}">
-  <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='favicon/android-chrome-512x512.png') }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
-  <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
-  <meta name="theme-color" content="#171923">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='favicon/android-chrome-192x192.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='favicon/android-chrome-512x512.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
+    <meta name="theme-color" content="#171923">
   {% endblock %}
 </head>
 <body>
 {% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<div class="flash-container">
-  {% for category, message in messages %}
-  <div class="flash flash-{{ category }}">
-    {% if category == 'info' %}
-    <img src="{{ url_for('static', filename='icons/info.svg') }}" alt="ℹ️" class="flash-icon">
-    {% elif category == 'warn' %}
-    <img src="{{ url_for('static', filename='icons/error.svg') }}" alt="⚠️" class="flash-icon">
-    {% elif category == 'error' %}
-    <img src="{{ url_for('static', filename='icons/error.svg') }}" alt="❌" class="flash-icon">
-    {% else %}
-    <img src="{{ url_for('static', filename='icons/info.svg') }}" alt="🚀" class="flash-icon">
-    {% endif %}
-    {{ message }}
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">
+          {% if category == 'info' %}
+            <img src="{{ url_for('static', filename='icons/info.svg') }}" alt="ℹ️" class="flash-icon">
+          {% elif category == 'warn' %}
+            <img src="{{ url_for('static', filename='icons/error.svg') }}" alt="⚠️" class="flash-icon">
+          {% elif category == 'error' %}
+            <img src="{{ url_for('static', filename='icons/error.svg') }}" alt="❌" class="flash-icon">
+          {% else %}
+            <img src="{{ url_for('static', filename='icons/info.svg') }}" alt="🚀" class="flash-icon">
+          {% endif %}
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endwith %}
 {% block navbar %}
-<div class="hamburger">☰</div>
-<nav class="sidebar">
-  <div class="sidebar-header">
-    {{ admin }}
-    <div class="dim small">⏱ {{ session_time }} в сессии</div>
-    <div class="dim small">🔑 Всего входов: {{ authorizations_on_site }}</div>
-  </div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('main.root') }}'">📊 Основная</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('users.view_users') }}'">👤 Пользователи</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('tasks.view_tasks') }}'">📝 Задачи</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('logs.view_logs') }}'">📓 Логи</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('settings.view_settings') }}'">⚙ Настройки</div>
-  <div class="menu-item" onclick="window.location.href='{{ url_for('auth.logout') }}'">🚪 Выход</div>
-</nav>
+  <div class="hamburger">☰</div>
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      {{ admin }}
+      <div class="dim small">⏱ {{ session_time }} в сессии</div>
+      <div class="dim small">🔑 Всего входов: {{ authorizations_on_site }}</div>
+    </div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.root') }}'">📊 Основная</div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('users.view_users') }}'">👤 Пользователи</div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('tasks.view_tasks') }}'">📝 Задачи</div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('logs.view_logs') }}'">📓 Логи</div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('settings.view_settings') }}'">⚙ Настройки</div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('auth.logout') }}'">🚪 Выход</div>
+  </nav>
 {% endblock %}
 <main class="content">
   {% block content %}{% endblock %}
 </main>
 {% block scripts %}
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      document.querySelectorAll('.flash').forEach(el => {
-        el.style.transition = 'opacity 0.5s ease';
-        el.style.opacity = '0';
-        setTimeout(() => el.remove(), 500);
-      });
-    }, 3000);
-  });
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelectorAll('.flash').forEach(el => {
+          el.style.transition = 'opacity 0.5s ease';
+          el.style.opacity = '0';
+          setTimeout(() => el.remove(), 500);
+        });
+      }, 3000);
+    });
 
-  document.querySelector('.hamburger').addEventListener('click', () => {
-    document.querySelector('.sidebar').classList.toggle('active');
-  });
+    document.querySelector('.hamburger').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('active');
+    });
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.sidebar') && !e.target.closest('.hamburger')) {
-      document.querySelector('.sidebar').classList.remove('active');
-    }
-  });
-</script>
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.sidebar') && !e.target.closest('.hamburger')) {
+        document.querySelector('.sidebar').classList.remove('active');
+      }
+    });
+  </script>
 {% endblock %}
 </body>
 </html>

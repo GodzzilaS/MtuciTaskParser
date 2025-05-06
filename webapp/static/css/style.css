@@ -612,4 +612,7 @@ button, select, input[type="checkbox"] {
   display:flex;
   flex-wrap:wrap;
   gap:1rem;
+  
+button, select {
+  cursor: pointer !important;
 }

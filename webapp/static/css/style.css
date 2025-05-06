@@ -271,12 +271,10 @@ body {
   text-decoration: none;
   border-radius: 0.75rem;
   transition: all 0.2s ease-in-out;
-  box-shadow: var(--shadow);
 }
 
 .btn-toggle:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 25px rgba(0, 255, 136, 0.35);
 }
 
 .btn-toggle-delete {
@@ -287,12 +285,10 @@ body {
   text-decoration: none;
   border-radius: 0.75rem;
   transition: all 0.2s ease-in-out;
-  box-shadow: var(--shadow);
 }
 
 .btn-toggle-delete:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 25px rgb(194, 44, 44);
 }
 
 .stats-grid {
@@ -577,8 +573,7 @@ body {
   padding: 0 6px;
 }
 
-input,
-textarea {
+input, textarea {
   caret-color: auto;
   cursor: text !important;
 }
@@ -587,6 +582,37 @@ div {
   cursor: default;
 }
 
+button, select, input[type="checkbox"] {
+  cursor: pointer !important;
+}
+
+.input-group.notif-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.input-group.notif-row label {
+  width: auto;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.input-group.notif-row input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: auto;
+  accent-color: var(--accent);
+  transform: scale(1.2);
+}
+
+.filter-panel{
+  margin-top:1rem;
+}
+.filter-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:1rem;
+  
 button, select {
   cursor: pointer !important;
 }

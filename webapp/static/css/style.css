@@ -604,3 +604,12 @@ button, select, input[type="checkbox"] {
   accent-color: var(--accent);
   transform: scale(1.2);
 }
+
+.filter-panel{
+  margin-top:1rem;
+}
+.filter-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:1rem;
+}

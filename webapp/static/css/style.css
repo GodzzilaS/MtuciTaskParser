@@ -605,14 +605,12 @@ button, select, input[type="checkbox"] {
   transform: scale(1.2);
 }
 
-.filter-panel{
-  margin-top:1rem;
+.filter-panel {
+  margin-top: 1rem;
 }
-.filter-group{
-  display:flex;
-  flex-wrap:wrap;
-  gap:1rem;
-  
-button, select {
-  cursor: pointer !important;
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 }

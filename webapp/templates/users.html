@@ -1,219 +1,235 @@
 {% extends 'base.html' %}
 {% block title %}Пользователи{% endblock %}
 {% block content %}
-<div class="card">
-  <h2>👥 Список пользователей</h2>
-  <div class="users-list">
-    {% for user in users_list %}
-    <div class="user-card" onclick="openEditModal({
-      telegram_id: '{{ user.telegram_id }}',
-      telegram_username: '{{ user.telegram_username }}',
-      mtuci_login: '{{ user.mtuci_login }}',
-      faculty: '{{ user.faculty }}',
-      course: '{{ user.course }}',
-      group: '{{ user.group }}',
-      education_level: '{{ user.education_level }}',
-      study_form: '{{ user.study_form }}'
-    })">
-      <div class="user-name">
-        <a href="https://t.me/{{ user.telegram_username }}" class="telegram-link">
-          @{{ user.telegram_username or 'Без имени' }}
-        </a>
-      </div>
-      <div class="user-info">📧 Логин (почта): {{ user.mtuci_login or '—' }}</div>
-      <div class="user-info">🎓 Факультет: {{ user.faculty or '—' }}</div>
-      <div class="user-info">📘 Курс: {{ user.course or '—' }} | Группа: {{ user.group or '—' }}</div>
-      <div class="user-info">🏛 Уровень: {{ user.education_level or '—' }} | Форма: {{ user.study_form or '—' }}</div>
+  <div class="card">
+    <h2>👥 Список пользователей</h2>
+    <div class="users-list">
+      {% for user in users_list %}
+        <div class="user-card" onclick="openEditModal({
+            telegram_id: '{{ user.telegram_id }}',
+            telegram_username: '{{ user.telegram_username }}',
+            mtuci_login: '{{ user.mtuci_login }}',
+            faculty: '{{ user.faculty }}',
+            course: '{{ user.course }}',
+            group: '{{ user.group }}',
+            education_level: '{{ user.education_level }}',
+            study_form: '{{ user.study_form }}',
+            notifications: '{{ user.notifications }}'
+            })">
+          <div class="user-name">
+            <a href="https://t.me/{{ user.telegram_username }}" class="telegram-link">
+              @{{ user.telegram_username or 'Без имени' }}
+            </a>
+          </div>
+          <div class="user-info">📧 Логин (почта): {{ user.mtuci_login or '—' }}</div>
+          <div class="user-info">🎓 Факультет: {{ user.faculty or '—' }}</div>
+          <div class="user-info">📘 Курс: {{ user.course or '—' }} | Группа: {{ user.group or '—' }}</div>
+          <div class="user-info">🏛 Уровень: {{ user.education_level or '—' }} |
+            Форма: {{ user.study_form or '—' }}</div>
+          <div class="user-info">
+            🔔 Уведомления:
+            <span class="{{ 'on' if user.notifications else 'off' }}">
+              {{ 'вкл.' if user.notifications else 'выкл.' }}
+            </span>
+          </div>
+        </div>
+      {% endfor %}
     </div>
-    {% endfor %}
   </div>
-</div>
 
-<div id="editModal" class="modal-wrapper">
-  <div class="modal-card">
-    <h3 id="header">Редактирование пользователя {{ telegram_id }}</h3>
-    <form id="editForm" method="POST" action="{{ url_for('users.update_user') }}">
-      <input type="hidden" id="telegram_id" name="telegram_id">
+  <div id="editModal" class="modal-wrapper">
+    <div class="modal-card">
+      <h3 id="header">Редактирование пользователя {{ telegram_id }}</h3>
+      <form id="editForm" method="POST" action="{{ url_for('users.update_user') }}">
+        <input type="hidden" id="telegram_id" name="telegram_id">
 
-      <div class="input-group">
-        <label>Имя пользователя в telegram</label>
-        <input type="text" name="telegram_username" id="telegram_username" required>
-      </div>
-
-      <div class="input-group">
-        <label>Логин от МТУСИ</label>
-        <input type="email" name="mtuci_login" id="mtuci_login">
-      </div>
-
-      <div class="input-group">
-        <label>Уровень обучения</label>
-        <div class="select-wrapper">
-          <select name="education_level" id="education_level" required></select>
+        <div class="input-group">
+          <label>Имя пользователя в telegram</label>
+          <input type="text" name="telegram_username" id="telegram_username" required>
         </div>
-      </div>
 
-      <div class="input-group">
-        <label>Форма обучения</label>
-        <div class="select-wrapper">
-          <select name="study_form" id="study_form" required></select>
+        <div class="input-group">
+          <label>Логин от МТУСИ</label>
+          <input type="email" name="mtuci_login" id="mtuci_login">
         </div>
-      </div>
 
-      <div class="input-group">
-        <label>Факультет</label>
-        <div class="select-wrapper">
-          <select name="faculty" id="faculty" required></select>
+        <div class="input-group">
+          <label>Уровень обучения</label>
+          <div class="select-wrapper">
+            <select name="education_level" id="education_level" required></select>
+          </div>
         </div>
-      </div>
 
-      <div class="input-group">
-        <label>Курс</label>
-        <div class="select-wrapper">
-          <select name="course" id="course" required></select>
+        <div class="input-group">
+          <label>Форма обучения</label>
+          <div class="select-wrapper">
+            <select name="study_form" id="study_form" required></select>
+          </div>
         </div>
-      </div>
 
-      <div class="input-group">
-        <label>Группа</label>
-        <input type="text" name="group" id="group">
-      </div>
+        <div class="input-group">
+          <label>Факультет</label>
+          <div class="select-wrapper">
+            <select name="faculty" id="faculty" required></select>
+          </div>
+        </div>
 
-      <div class="button-submit-panel">
-        <button type="submit" class="btn-toggle-delete" id="deleteBtn">Удалить</button>
-        <button type="button" class="btn-toggle" onclick="closeEditModal()">Отмена</button>
-        <button type="submit" class="btn-toggle">Сохранить</button>
-      </div>
-    </form>
+        <div class="input-group">
+          <label>Курс</label>
+          <div class="select-wrapper">
+            <select name="course" id="course" required></select>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Группа</label>
+          <input type="text" name="group" id="group">
+        </div>
+
+        <div class="input-group notif-row">
+          <label>
+            Уведомления включены:
+          </label>
+          <input type="checkbox" name="notifications_enabled" id="notifications_enabled">
+        </div>
+
+        <div class="button-submit-panel">
+          <button type="submit" class="btn-toggle-delete" id="deleteBtn">Удалить</button>
+          <button type="button" class="btn-toggle" onclick="closeEditModal()">Отмена</button>
+          <button type="submit" class="btn-toggle">Сохранить</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
-<script>
-  const levelSelect = document.getElementById("education_level")
-  const formSelect = document.getElementById("study_form")
-  const facultySelect = document.getElementById("faculty")
-  const courseSelect = document.getElementById("course")
-  const COURSES_MAP = {{ courses_map | safe }}
+  <script>
+    const levelSelect = document.getElementById("education_level")
+    const formSelect = document.getElementById("study_form")
+    const facultySelect = document.getElementById("faculty")
+    const courseSelect = document.getElementById("course")
+    const COURSES_MAP = {{ courses_map | safe }}
 
-  document.addEventListener('DOMContentLoaded', () => {
-    Object.keys(COURSES_MAP).forEach(level => {
-      const opt = document.createElement("option");
-      opt.value = level;
-      opt.textContent = level;
-      levelSelect.appendChild(opt);
-    });
-  });
-
-  function updateForms() {
-    formSelect.innerHTML = "";
-    facultySelect.innerHTML = "";
-    courseSelect.innerHTML = "";
-
-    const level = levelSelect.value;
-    if (!level || !COURSES_MAP[level]) return;
-
-    const forms = Object.keys(COURSES_MAP[level]);
-    forms.forEach(form => {
-      const opt = document.createElement("option");
-      opt.value = form;
-      opt.textContent = form;
-      formSelect.appendChild(opt);
+    document.addEventListener('DOMContentLoaded', () => {
+      Object.keys(COURSES_MAP).forEach(level => {
+        const opt = document.createElement("option");
+        opt.value = level;
+        opt.textContent = level;
+        levelSelect.appendChild(opt);
+      });
     });
 
-    updateFaculties();
-  }
+    function updateForms() {
+      formSelect.innerHTML = "";
+      facultySelect.innerHTML = "";
+      courseSelect.innerHTML = "";
 
-  function updateFaculties() {
-    facultySelect.innerHTML = "";
-    courseSelect.innerHTML = "";
+      const level = levelSelect.value;
+      if (!level || !COURSES_MAP[level]) return;
 
-    const level = levelSelect.value;
-    const form = formSelect.value;
+      const forms = Object.keys(COURSES_MAP[level]);
+      forms.forEach(form => {
+        const opt = document.createElement("option");
+        opt.value = form;
+        opt.textContent = form;
+        formSelect.appendChild(opt);
+      });
 
-    if (!level || !form || !COURSES_MAP[level][form]) return;
-
-    const faculties = Object.keys(COURSES_MAP[level][form]);
-    faculties.forEach(faculty => {
-      const opt = document.createElement("option");
-      opt.value = faculty;
-      opt.textContent = faculty;
-      facultySelect.appendChild(opt);
-    });
-
-    updateCourses();
-  }
-
-  function updateCourses() {
-    courseSelect.innerHTML = "";
-
-    const level = levelSelect.value;
-    const form = formSelect.value;
-    const faculty = facultySelect.value;
-
-    if (!level || !form || !faculty || !COURSES_MAP[level][form][faculty]) return;
-
-    const courses = COURSES_MAP[level][form][faculty];
-    courses.forEach(course => {
-      const opt = document.createElement("option");
-      opt.value = course;
-      opt.textContent = course;
-      courseSelect.appendChild(opt);
-    });
-  }
-
-  levelSelect.addEventListener("change", () => {
-    updateForms();
-  });
-
-  formSelect.addEventListener("change", () => {
-    updateFaculties();
-  });
-
-  facultySelect.addEventListener("change", () => {
-    updateCourses();
-  });
-
-  function openEditModal(user) {
-    document.getElementById('header').textContent = `Редактирование пользователя ${user.telegram_id}`;
-    document.getElementById('telegram_id').value = user.telegram_id;
-    document.getElementById('telegram_username').value = user.telegram_username || '';
-    document.getElementById('mtuci_login').value = user.mtuci_login || '';
-    document.getElementById('group').value = user.group || '';
-
-    levelSelect.value = user.education_level || '';
-    updateForms();
-
-    formSelect.value = user.study_form || '';
-    updateFaculties();
-
-    facultySelect.value = user.faculty || '';
-    updateCourses();
-
-    courseSelect.value = user.course || '';
-
-    document.getElementById('editModal').style.display = 'flex';
-  }
-
-  function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-  }
-
-  document.getElementById('editModal').addEventListener('click', function (event) {
-    const modalCard = document.querySelector('.modal-card');
-    if (!modalCard.contains(event.target)) {
-      closeEditModal();
+      updateFaculties();
     }
-  });
 
-  document.getElementById('editForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    this.submit();
-    closeEditModal();
-  });
+    function updateFaculties() {
+      facultySelect.innerHTML = "";
+      courseSelect.innerHTML = "";
 
-  document.getElementById('deleteBtn').addEventListener('click', function () {
-    const form = document.getElementById('editForm');
-    form.action = "{{ url_for('users.delete_user') }}";
-    form.submit();
-  });
-</script>
+      const level = levelSelect.value;
+      const form = formSelect.value;
+
+      if (!level || !form || !COURSES_MAP[level][form]) return;
+
+      const faculties = Object.keys(COURSES_MAP[level][form]);
+      faculties.forEach(faculty => {
+        const opt = document.createElement("option");
+        opt.value = faculty;
+        opt.textContent = faculty;
+        facultySelect.appendChild(opt);
+      });
+
+      updateCourses();
+    }
+
+    function updateCourses() {
+      courseSelect.innerHTML = "";
+
+      const level = levelSelect.value;
+      const form = formSelect.value;
+      const faculty = facultySelect.value;
+
+      if (!level || !form || !faculty || !COURSES_MAP[level][form][faculty]) return;
+
+      const courses = COURSES_MAP[level][form][faculty];
+      courses.forEach(course => {
+        const opt = document.createElement("option");
+        opt.value = course;
+        opt.textContent = course;
+        courseSelect.appendChild(opt);
+      });
+    }
+
+    levelSelect.addEventListener("change", () => {
+      updateForms();
+    });
+
+    formSelect.addEventListener("change", () => {
+      updateFaculties();
+    });
+
+    facultySelect.addEventListener("change", () => {
+      updateCourses();
+    });
+
+    function openEditModal(user) {
+      document.getElementById('header').textContent = `Редактирование пользователя ${user.telegram_id}`;
+      document.getElementById('telegram_id').value = user.telegram_id;
+      document.getElementById('telegram_username').value = user.telegram_username || '';
+      document.getElementById('mtuci_login').value = user.mtuci_login || '';
+      document.getElementById('group').value = user.group || '';
+      document.getElementById('notifications_enabled').checked = String(user.notifications).toLowerCase() === 'true';
+
+      levelSelect.value = user.education_level || '';
+      updateForms();
+
+      formSelect.value = user.study_form || '';
+      updateFaculties();
+
+      facultySelect.value = user.faculty || '';
+      updateCourses();
+
+      courseSelect.value = user.course || '';
+
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    document.getElementById('editModal').addEventListener('click', function (event) {
+      const modalCard = document.querySelector('.modal-card');
+      if (!modalCard.contains(event.target)) {
+        closeEditModal();
+      }
+    });
+
+    document.getElementById('editForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      this.submit();
+      closeEditModal();
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', function () {
+      const form = document.getElementById('editForm');
+      form.action = "{{ url_for('users.delete_user') }}";
+      form.submit();
+    });
+  </script>
 {% endblock %}

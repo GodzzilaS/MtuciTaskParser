@@ -37,39 +37,24 @@ def update_user():
 
         has_changes = False
 
-        new_telegram = request.form.get('telegram_username')
-        if user.telegram_username != new_telegram:
-            user.telegram_username = new_telegram
-            has_changes = True
+        mappings = {
+            'telegram_username': 'telegram_username',
+            'mtuci_login': 'mtuci_login',
+            'faculty': 'faculty',
+            'course': 'course',
+            'group': 'group',
+            'education_level': 'education_level',
+            'study_form': 'study_form'
+        }
+        for form_key, attr in mappings.items():
+            new_val = request.form.get(form_key) or None
+            if getattr(user, attr) != new_val:
+                setattr(user, attr, new_val)
+                has_changes = True
 
-        new_mtuci_login = request.form.get('mtuci_login') or None
-        if user.mtuci_login != new_mtuci_login:
-            user.mtuci_login = new_mtuci_login
-            has_changes = True
-
-        new_faculty = request.form.get('faculty') or None
-        if user.faculty != new_faculty:
-            user.faculty = new_faculty
-            has_changes = True
-
-        new_course = request.form.get('course') or None
-        if user.course != new_course:
-            user.course = new_course
-            has_changes = True
-
-        new_group = request.form.get('group') or None
-        if user.group != new_group:
-            user.group = new_group
-            has_changes = True
-
-        new_education_level = request.form.get('education_level') or None
-        if user.education_level != new_education_level:
-            user.education_level = new_education_level
-            has_changes = True
-
-        new_form = request.form.get('study_form') or None
-        if user.study_form != new_form:
-            user.study_form = new_form
+        new_notif = bool(request.form.get('notifications_enabled'))
+        if getattr(user, 'notifications', None) != new_notif:
+            user.notifications = new_notif
             has_changes = True
 
         if has_changes:

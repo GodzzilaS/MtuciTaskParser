@@ -109,7 +109,8 @@ def main():
         await application.bot.set_my_commands([
             BotCommand("login", "Авторизация /login ваш_логин ваш_пароль"),
             BotCommand("get_tasks", "Получить список заданий из LMS"),
-            BotCommand("get_timetable", "Получить расписание из LMS")
+            BotCommand("get_timetable", "Получить расписание из LMS"),
+            BotCommand("toggle_notifications", "Переключить уведомления")
         ])
 
         if platform.system() != "Windows":

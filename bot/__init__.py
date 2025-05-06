@@ -10,6 +10,7 @@ from .start_handler import start
 from .login_handler import login
 from .tasks_handler import get_tasks
 from .timetable_handler import get_timetable
+from .toggle_notifications_handler import toggle_notifications
 
 logger = logging.getLogger(__name__)
 
@@ -30,3 +31,4 @@ def register_handlers(app, keyboard: ReplyKeyboardMarkup):
     app.add_handler(CommandHandler("login", login(encryptor)))
     app.add_handler(CommandHandler("get_tasks", get_tasks(settings, encryptor, scraper), block=False))
     app.add_handler(CommandHandler("get_timetable", get_timetable(settings, encryptor, scraper), block=False))
+    app.add_handler(CommandHandler("toggle_notifications", toggle_notifications(), block=False))
